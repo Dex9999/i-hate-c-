@@ -1,35 +1,13 @@
 #include <iostream>
-using namespace std;
 
 int main(){
-  int playerChoice;
-  int computerChoice;
+  std::string name = "Declan";
+  int age = 16;
+  char middleNameInitial = 'C';
+  bool takingCompSci = true;
+  double income = 100000;
+  float pi = 3.141592;
 
-  /* seed the rng with current time
-  before since it was pseudo random,
-  it gave the same response which nullifies the game lol */
-  std::srand(static_cast<unsigned int>(time(nullptr)));
-
-  // choose num from 1-100
-  computerChoice = std::rand() % 100 + 1;
-
-  int guesses = 1;
-
-  do{
-    cout << "Guess What Number I'm Thinking of: ";
-    cin >> playerChoice;
-
-    if(playerChoice == computerChoice){
-      cout << "Nice Job! My number was " << computerChoice << "\nYou got it in " << guesses << " guesses";
-    } else if (playerChoice > computerChoice){
-      cout << "My number is smaller!\n";
-    } else if (playerChoice < computerChoice){
-      cout << "My number is larger!\n";
-    } else {cout << "how did you do this. this shouldnt happen\n";}
-    ++guesses;
-  } while (playerChoice != computerChoice);
-
-  // normalize input
-  playerChoice = std::toupper(playerChoice);
+  std::cout << "Hello I'm " << name << " and I am " << age << " years old.\n"<< "My middle inital is " << middleNameInitial << "\nI am " << takingCompSci << "00% taking CompSci in University\nI hope to make $" << income << " per year ;) \nAlso pi is " << pi << "\n";
   return 0;
-}
+  }
