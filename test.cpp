@@ -1,5 +1,5 @@
 #include <iostream>
-
+// https://en.cppreference.com/w/cpp/language/types
 int main(){
   std::string name = "Declan";
   int age = 16;
