@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <cmath>
 
 int main()
 {
@@ -7,6 +8,13 @@ int main()
     shape.setFillColor(sf::Color::Green);
 
     bool right = true;
+    sf::ConvexShape arrow;
+    arrow.setPointCount(3);
+    arrow.setPoint(0, sf::Vector2f(0.f, -40.f)); // Top point
+    arrow.setPoint(1, sf::Vector2f(-30.f, 15.f)); // Bottom-left point
+    arrow.setPoint(2, sf::Vector2f(15.f, 20.f)); // Bottom-right point
+    arrow.setFillColor(sf::Color::Red);
+
     float posX = shape.getPosition().x;
     float posY = shape.getPosition().y;
 
@@ -37,7 +45,7 @@ int main()
         // {
         //     right = true;
         // }
-        
+
         // if (right)
         // {
         //     shape.move(1.f, 0.f);
@@ -46,48 +54,90 @@ int main()
         // {
         //     shape.move(-1.f, 0.f);
         // }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && posY < 420)
+
+        float speed = 1.f;
+
+        float facing = shape.getRotation();
+        float radians = (facing - 90.f) * (3.14159265359f / 180.f); // Convert to radians and adjust for SFML's starting rotation
+
+        // Calculate movement in the direction of rotation
+        float deltaX = std::cos(radians) * speed;
+        float deltaY = std::sin(radians) * speed;
+        sf::FloatRect shapeBounds = shape.getGlobalBounds();
+
+        // Tank drive
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && posY < 420)
         {
-            shape.move(0.f, 1.f);
+            shape.move(deltaX, deltaY);
+            arrow.move(deltaX, deltaY);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
+        {
+            shape.rotate(-speed);
+            arrow.rotate(-speed);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && posY > 0)
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
         {
-            shape.move(0.f, -1.f);
+            shape.rotate(speed);
+            arrow.rotate(speed);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
-        {
-            shape.rotate(-10.0);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && posY > 0)
         {
-            shape.move(10.0);
+            shape.move(-deltaX, -deltaY);
+            arrow.move(-deltaX, -deltaY);
+           if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
+        {
+            shape.rotate(-speed);
+            arrow.rotate(-speed);
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
+        {
+            shape.rotate(speed);
+            arrow.rotate(speed);
+        }
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
+        {
+            shape.rotate(-speed);
+            arrow.rotate(-speed);
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
+        {
+            shape.rotate(speed);
+            arrow.rotate(speed);
         }
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && posY < 420)
+        // Strafing
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && posY < 420)
         {
-            shape.move(0.f, 1.f);
+            shape.move(-deltaY, deltaX);
+            arrow.move(-deltaY, deltaX);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && posY > 0)
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && posY > 0)
         {
-            shape.move(0.f, -1.f);
+            shape.move(deltaY, -deltaX);
+            arrow.move(deltaY, -deltaX);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && posX > 0)
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && posX > 0)
         {
-            shape.move(-1.f, 0.f);
+            shape.move(-deltaX, -deltaY);
+            arrow.move(-deltaX, -deltaY);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && posX < 420)
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && posX < 420)
         {
-            shape.move(1.f, 0.f);
+            shape.move(deltaX, deltaY);
+            arrow.move(deltaX, deltaY);
         }
 
         posX = shape.getPosition().x;
         posY = shape.getPosition().y;
 
-        text.setString(std::to_string(static_cast<int>(posX)));
+        text.setString(std::to_string(static_cast<float>(facing)));
 
 
         window.clear();
         window.draw(shape);
+        window.draw(arrow);
         window.draw(text);
         window.display();
     }
