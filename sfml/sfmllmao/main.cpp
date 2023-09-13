@@ -56,9 +56,26 @@ int main()
         }
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
         {
-            shape.move(-1.f, 0.f);
+            shape.rotate(-10.0);
         }
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
+        {
+            shape.move(10.0);
+        }
+
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && posY < 420)
+        {
+            shape.move(0.f, 1.f);
+        }
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && posY > 0)
+        {
+            shape.move(0.f, -1.f);
+        }
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && posX > 0)
+        {
+            shape.move(-1.f, 0.f);
+        }
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && posX < 420)
         {
             shape.move(1.f, 0.f);
         }
