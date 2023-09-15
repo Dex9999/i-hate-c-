@@ -3,11 +3,23 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(500, 500), "lolz");
+    // time makes everything complication :sob:
+    sf::Clock clock;
+    sf::Time elapsed;
+
+    bool dead = false;
+    sf::RenderWindow window(sf::VideoMode::getFullscreenModes()[0], "DRIVE RICKY DRIVE", sf::Style::Fullscreen);
+    // sf::RenderWindow window(sf::VideoMode(1000, 1000), "lolz");
     sf::CircleShape shape(40.f);
     shape.setFillColor(sf::Color::Green);
     shape.setOrigin(40.f, 40.f);
     shape.setPosition(shape.getPosition().x + shape.getOrigin().x, shape.getPosition().y + shape.getOrigin().y);
+
+    sf::CircleShape enemy(40.f);
+    enemy.setFillColor(sf::Color::Red);
+    enemy.setOrigin(40.f, 40.f);
+    enemy.setPosition(enemy.getPosition().x + enemy.getOrigin().x, enemy.getPosition().y + enemy.getOrigin().y);
+    enemy.move(100, 100);
 
     bool right = true;
     sf::ConvexShape arrow;
@@ -30,6 +42,12 @@ int main()
     sf::FloatRect textBounds = text.getLocalBounds();
     text.setOrigin(textBounds.left + 100, 0);
     text.setPosition(200, 200);
+    // make point up and start in center
+    shape.rotate(180);
+    arrow.rotate(180);
+
+    shape.setPosition(window.getSize().x / 2, window.getSize().y / 2);
+    arrow.setPosition(window.getSize().x / 2, window.getSize().y / 2);
 
     while (window.isOpen())
     {
@@ -38,6 +56,10 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
+        {
+            window.close();
         }
 
         // if (right && pos > 400)
@@ -58,7 +80,7 @@ int main()
         //     shape.move(-1.f, 0.f);
         // }
 
-        float speed = 0.5;
+        float speed = 0.25;
 
         float facing = shape.getRotation();
         float radians = (facing - 90.f) * (3.14159265359f / 180.f); // Convert to radians and adjust for SFML's starting rotation
@@ -68,89 +90,139 @@ int main()
         float deltaY = std::sin(radians) * speed;
         sf::FloatRect shapeBounds = shape.getGlobalBounds();
 
+        //cur time for sprint
+        elapsed = clock.getElapsedTime();
+
         // Tank drive
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && posY < window.getSize().y - 40.f)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
         {
             if (posX + deltaX >= 0.f && posX + deltaX <= window.getSize().x &&
-                posY + deltaY >= 0.f && posY + deltaY <= window.getSize().y - 40.f)
+                posY + deltaY >= 0.f && posY + deltaY <= window.getSize().y)
             {
                 shape.move(deltaX, deltaY);
                 arrow.move(deltaX, deltaY);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
-                {
-                    shape.rotate(-speed);
-                    arrow.rotate(-speed);
-                }
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
-                {
-                    shape.rotate(speed);
-                    arrow.rotate(speed);
-                }
             }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && posY > 0)
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
         {
             if (posX - deltaX >= 0.f && posX - deltaX <= window.getSize().x &&
-                posY - deltaY >= 0.f && posY - deltaY <= window.getSize().y - 40.f)
+                posY - deltaY >= 0.f && posY - deltaY <= window.getSize().y)
             {
                 shape.move(-deltaX, -deltaY);
                 arrow.move(-deltaX, -deltaY);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) )
-                {
-                    shape.rotate(-speed);
-                    arrow.rotate(-speed);
-                }
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) )
-                {
-                    shape.rotate(speed);
-                    arrow.rotate(speed);
-                }
             }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && posX > 0)
-        {
-            shape.rotate(-speed);
-            arrow.rotate(-speed);
+        // space to dash
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)){
+
+            if(elapsed.asMilliseconds() > 5000){
+
+            if (posX - deltaX*1500 >= 0.f && posX - deltaX*1500 <= window.getSize().x &&
+                posY - deltaY*1500 >= 0.f && posY - deltaY*1500 <= window.getSize().y)
+            {
+                shape.move(-deltaX*1500, -deltaY*1500);
+                arrow.move(-deltaX*1500, -deltaY*1500);
+            }
+            shape.setFillColor(sf::Color::Yellow);
+            clock.restart();
+            } else{
+            shape.setFillColor(sf::Color::Green);
+            }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && posX < 420)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
         {
-            shape.rotate(speed);
-            arrow.rotate(speed);
+            shape.rotate(-speed / 2);
+            arrow.rotate(-speed / 2);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+        {
+            shape.rotate(speed / 2);
+            arrow.rotate(speed / 2);
         }
 
         // Strafing
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && posY < 420)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
-            shape.move(-deltaY, deltaX);
-            arrow.move(-deltaY, deltaX);
+            if (posX - deltaY >= 0.f && posX - deltaY <= window.getSize().x &&
+                posY + deltaX >= 0.f && posY + deltaX <= window.getSize().y)
+            {
+                shape.move(-deltaY, deltaX);
+                arrow.move(-deltaY, deltaX);
+            }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && posY > 0)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         {
-            shape.move(deltaY, -deltaX);
-            arrow.move(deltaY, -deltaX);
+            if (posX + deltaY >= 0.f && posX + deltaY <= window.getSize().x &&
+                posY - deltaX >= 0.f && posY - deltaX <= window.getSize().y)
+            {
+                shape.move(deltaY, -deltaX);
+                arrow.move(deltaY, -deltaX);
+            }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && posX > 0)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
-            shape.move(-deltaX, -deltaY);
-            arrow.move(-deltaX, -deltaY);
+            if (posX - deltaX >= 0.f && posX - deltaX <= window.getSize().x &&
+                posY - deltaY >= 0.f && posY - deltaY <= window.getSize().y)
+            {
+                shape.move(-deltaX, -deltaY);
+                arrow.move(-deltaX, -deltaY);
+            }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && posX < 420)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
         {
-            shape.move(deltaX, deltaY);
-            arrow.move(deltaX, deltaY);
+            if (posX + deltaX >= 0.f && posX + deltaX <= window.getSize().x &&
+                posY + deltaY >= 0.f && posY + deltaY <= window.getSize().y)
+            {
+                shape.move(deltaX, deltaY);
+                arrow.move(deltaX, deltaY);
+            }
         }
 
         posX = shape.getPosition().x;
         posY = shape.getPosition().y;
 
-        text.setString(std::to_string(static_cast<float>(facing)));
+
+
+        sf::FloatRect rect1 = shape.getGlobalBounds();
+        sf::FloatRect rect2 = enemy.getGlobalBounds();
+
+        if (rect1.intersects(rect2))
+        {
+            dead = true;
+        }
+
+        if (dead)
+        {
+            text.setString("You died!");
+            shape.setFillColor(sf::Color::Blue);
+            arrow.setFillColor(sf::Color::Blue);
+        }
+        else
+        {
+            text.setString(std::to_string(static_cast<float>(elapsed.asMilliseconds())));
+        }
 
         window.clear();
         window.draw(shape);
         window.draw(arrow);
+        window.draw(enemy);
         window.draw(text);
         window.display();
+        if (dead)
+        {
+            clock.restart();
+            while (true)
+            {
+                elapsed = clock.getElapsedTime();
+
+                // stall for 3 secs so its not program close jumpscare
+                if (elapsed.asMilliseconds() >= 2250)
+                {
+                    window.close(); // Close the window after 3 seconds
+                }
+            }
+        }
     }
 
     return 0;
