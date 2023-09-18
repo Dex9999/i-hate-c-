@@ -6,6 +6,7 @@ int main()
     // time makes everything complication :sob:
     sf::Clock clock;
     sf::Time elapsed;
+    sf::Color lightblue(0x00fff7ff);
 
     bool dead = false;
     sf::RenderWindow window(sf::VideoMode::getFullscreenModes()[0], "DRIVE RICKY DRIVE", sf::Style::Fullscreen);
@@ -48,6 +49,18 @@ int main()
 
     shape.setPosition(window.getSize().x / 2, window.getSize().y / 2);
     arrow.setPosition(window.getSize().x / 2, window.getSize().y / 2);
+
+    int onScreen = 0;
+    sf::CircleShape bullets[3];
+    sf::Vector2f bulletVelocities[3];
+    for (int i = 0; i < 3; i++)
+    {
+        bullets[i].setRadius(10.f);
+        bullets[i].setFillColor(sf::Color::Yellow);
+        bullets[i].setOrigin(10.f, 10.f);
+        bullets[i].setPosition(shape.getPosition().x, shape.getPosition().y);
+    }
+    
 
     while (window.isOpen())
     {
@@ -114,15 +127,35 @@ int main()
             }
         }
         // space to dash
+        // bool canDash = false;
+
+        if(elapsed.asMilliseconds() > 3000){
+        // bool canDash = true;
+        shape.setFillColor(sf::Color::Green);
+        } else{
+        shape.setFillColor(lightblue);
+        }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)){
+            if(onScreen < 3){
+                float bulletSpeed = 5.0f; // Adjust this value as needed
+                float bulletAngle = (shape.getRotation() - 90.f) * (3.14159265359f / 180.f); // Convert to radians and adjust for SFML's starting rotation
+                sf::Vector2f bulletVelocity(std::cos(bulletAngle) * bulletSpeed, std::sin(bulletAngle) * bulletSpeed);
 
-            if(elapsed.asMilliseconds() > 5000){
+                // Set bullet velocity and position
+                bulletVelocities[onScreen] = bulletVelocity;
+                bullets[onScreen].setPosition(shape.getPosition());
+                onScreen++;
+            }
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)){
 
-            if (posX - deltaX*1500 >= 0.f && posX - deltaX*1500 <= window.getSize().x &&
-                posY - deltaY*1500 >= 0.f && posY - deltaY*1500 <= window.getSize().y)
+            if(elapsed.asMilliseconds() > 3000){
+
+            if (posX - deltaX*1000 >= 0.f && posX - deltaX*1000 <= window.getSize().x &&
+                posY - deltaY*1000 >= 0.f && posY - deltaY*1000 <= window.getSize().y)
             {
-                shape.move(-deltaX*1500, -deltaY*1500);
-                arrow.move(-deltaX*1500, -deltaY*1500);
+                shape.move(-deltaX*1000, -deltaY*1000);
+                arrow.move(-deltaX*1000, -deltaY*1000);
             }
             shape.setFillColor(sf::Color::Yellow);
             clock.restart();
@@ -182,11 +215,15 @@ int main()
         posX = shape.getPosition().x;
         posY = shape.getPosition().y;
 
+        sf::Vector2f position = shape.getPosition();
+        sf::Vector2f enemypos = enemy.getPosition();
 
-
+        // hitboxes, maybe make circles later
         sf::FloatRect rect1 = shape.getGlobalBounds();
         sf::FloatRect rect2 = enemy.getGlobalBounds();
 
+        
+    
         if (rect1.intersects(rect2))
         {
             dead = true;
@@ -200,8 +237,9 @@ int main()
         }
         else
         {
-            text.setString(std::to_string(static_cast<float>(elapsed.asMilliseconds())));
+            text.setString(std::to_string(position.x) + ", " + std::to_string(position.y)+"\n"+std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
         }
+        enemy.move(0.0001*(position.x - enemypos.x), 0.0001*(position.y - enemypos.y));
 
         window.clear();
         window.draw(shape);
@@ -216,7 +254,7 @@ int main()
             {
                 elapsed = clock.getElapsedTime();
 
-                // stall for 3 secs so its not program close jumpscare
+                // stall for 3 secs so it's not program close jumpscare
                 if (elapsed.asMilliseconds() >= 2250)
                 {
                     window.close(); // Close the window after 3 seconds
@@ -227,3 +265,4 @@ int main()
 
     return 0;
 }
+
