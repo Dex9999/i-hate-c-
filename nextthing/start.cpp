@@ -9,5 +9,5 @@ int main(){
     std::cout << "\nenter one more please: ";
     std::cin >> number2;
 
-    std::cout << "The product of " << number1 << " and " << number2 << " is "<< number1*number2 << "!";
+    std::cout << "The sum of " << number1 << " and " << number2 << " is "<< number1+number2 << "!";
 }

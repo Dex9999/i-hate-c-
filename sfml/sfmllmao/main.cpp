@@ -1,11 +1,14 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <iostream>
 
 int main()
 {
     // time makes everything complication :sob:
     sf::Clock clock;
     sf::Time elapsed;
+    sf::Clock bulletclock;
+    sf::Time bulletelapsed;
     sf::Color lightblue(0x00fff7ff);
 
     bool dead = false;
@@ -21,6 +24,9 @@ int main()
     enemy.setOrigin(40.f, 40.f);
     enemy.setPosition(enemy.getPosition().x + enemy.getOrigin().x, enemy.getPosition().y + enemy.getOrigin().y);
     enemy.move(100, 100);
+
+    int enemyLives = 3;
+    int lastBulletIndex = -1;
 
     bool right = true;
     sf::ConvexShape arrow;
@@ -53,6 +59,7 @@ int main()
     int onScreen = 0;
     sf::CircleShape bullets[3];
     sf::Vector2f bulletVelocities[3];
+    bool bulletsShot[3] = {false, false, false};
     for (int i = 0; i < 3; i++)
     {
         bullets[i].setRadius(10.f);
@@ -60,7 +67,6 @@ int main()
         bullets[i].setOrigin(10.f, 10.f);
         bullets[i].setPosition(shape.getPosition().x, shape.getPosition().y);
     }
-    
 
     while (window.isOpen())
     {
@@ -103,8 +109,10 @@ int main()
         float deltaY = std::sin(radians) * speed;
         sf::FloatRect shapeBounds = shape.getGlobalBounds();
 
-        //cur time for sprint
+        // cur time for sprint
         elapsed = clock.getElapsedTime();
+
+        bulletelapsed = bulletclock.getElapsedTime();
 
         // Tank drive
 
@@ -129,38 +137,55 @@ int main()
         // space to dash
         // bool canDash = false;
 
-        if(elapsed.asMilliseconds() > 3000){
-        // bool canDash = true;
-        shape.setFillColor(sf::Color::Green);
-        } else{
-        shape.setFillColor(lightblue);
-        }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)){
-            if(onScreen < 3){
-                float bulletSpeed = 5.0f; // Adjust this value as needed
-                float bulletAngle = (shape.getRotation() - 90.f) * (3.14159265359f / 180.f); // Convert to radians and adjust for SFML's starting rotation
-                sf::Vector2f bulletVelocity(std::cos(bulletAngle) * bulletSpeed, std::sin(bulletAngle) * bulletSpeed);
-
-                // Set bullet velocity and position
-                bulletVelocities[onScreen] = bulletVelocity;
-                bullets[onScreen].setPosition(shape.getPosition());
-                onScreen++;
-            }
-        }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)){
-
-            if(elapsed.asMilliseconds() > 3000){
-
-            if (posX - deltaX*1000 >= 0.f && posX - deltaX*1000 <= window.getSize().x &&
-                posY - deltaY*1000 >= 0.f && posY - deltaY*1000 <= window.getSize().y)
-            {
-                shape.move(-deltaX*1000, -deltaY*1000);
-                arrow.move(-deltaX*1000, -deltaY*1000);
-            }
-            shape.setFillColor(sf::Color::Yellow);
-            clock.restart();
-            } else{
+        if (elapsed.asMilliseconds() > 3000)
+        {
+            // bool canDash = true;
             shape.setFillColor(sf::Color::Green);
+        }
+        else
+        {
+            shape.setFillColor(lightblue);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+        {
+            if (bulletelapsed.asMilliseconds() > 100)
+            {
+                if (onScreen < 3)
+                {
+                    std::cout << onScreen << "\n";
+                    bulletsShot[onScreen] = true;
+
+                    float bulletSpeed = 1.0f;
+                    float bulletAngle = (shape.getRotation() - 90.f) * (3.14159265359f / -180.f);
+                    sf::Vector2f bulletVelocity(std::cos(bulletAngle) * -bulletSpeed, std::sin(bulletAngle) * bulletSpeed);
+
+                    // Set bullet velocity and position
+                    bulletVelocities[onScreen] = bulletVelocity;
+                    bullets[onScreen].setPosition(shape.getPosition());
+                    onScreen++;
+                    bulletclock.restart();
+                }
+            }
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift))
+        {
+
+            if (elapsed.asMilliseconds() > 3000)
+            {
+
+                if (posX - deltaX * 1000 >= 0.f && posX - deltaX * 1000 <= window.getSize().x &&
+                    posY - deltaY * 1000 >= 0.f && posY - deltaY * 1000 <= window.getSize().y)
+                {
+                    shape.move(-deltaX * 1000, -deltaY * 1000);
+                    arrow.move(-deltaX * 1000, -deltaY * 1000);
+                }
+                shape.setFillColor(sf::Color::Yellow);
+                clock.restart();
+            }
+            else
+            {
+                shape.setFillColor(sf::Color::Green);
             }
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
@@ -172,6 +197,17 @@ int main()
         {
             shape.rotate(speed / 2);
             arrow.rotate(speed / 2);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J))
+        {
+            shape.rotate(-speed);
+            arrow.rotate(-speed);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L))
+        {
+            shape.rotate(speed);
+            arrow.rotate(speed);
         }
 
         // Strafing
@@ -219,14 +255,47 @@ int main()
         sf::Vector2f enemypos = enemy.getPosition();
 
         // hitboxes, maybe make circles later
-        sf::FloatRect rect1 = shape.getGlobalBounds();
-        sf::FloatRect rect2 = enemy.getGlobalBounds();
+        sf::FloatRect playerhitbox = shape.getGlobalBounds();
+        sf::FloatRect enemyhitbox = enemy.getGlobalBounds();
 
-        
-    
-        if (rect1.intersects(rect2))
+        // check if player touching enemy
+        if (playerhitbox.intersects(enemyhitbox))
         {
-            dead = true;
+            if (enemyLives > 0)
+            {
+                dead = true;
+            }
+        }
+
+        // check if bullets hit enemy
+        for (int i = 0; i < 3; i++)
+        {
+            if (bullets[i].getGlobalBounds().intersects(enemyhitbox) && bulletsShot[i])
+            {
+                if (enemyLives == 3)
+                {
+                    enemy.setFillColor(sf::Color::Blue);
+                }
+                else if (enemyLives == 2)
+                {
+                    enemy.setFillColor(sf::Color::Green);
+                }
+                else if (enemyLives == 1)
+                {
+                    enemy.setFillColor(sf::Color::Transparent);
+                }
+                --enemyLives;
+                bulletsShot[i] = false;
+                --onScreen;
+            }
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (bullets[i].getPosition() != shape.getPosition())
+            {
+                bullets[i].move(bulletVelocities[i]);
+            }
         }
 
         if (dead)
@@ -237,15 +306,40 @@ int main()
         }
         else
         {
-            text.setString(std::to_string(position.x) + ", " + std::to_string(position.y)+"\n"+std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
+            text.setString(std::to_string(position.x) + ", " + std::to_string(position.y) + "\n" + std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
         }
-        enemy.move(0.0001*(position.x - enemypos.x), 0.0001*(position.y - enemypos.y));
+        enemy.move(0.0001 * (position.x - enemypos.x), 0.0001 * (position.y - enemypos.y));
 
         window.clear();
         window.draw(shape);
         window.draw(arrow);
         window.draw(enemy);
         window.draw(text);
+        for (int i = 0; i < 3; i++)
+        {
+            if (bulletsShot[i])
+            {
+                bullets[i].move(bulletVelocities[i]);
+
+                // Check if the bullet is out of bounds
+                if (bullets[i].getPosition().x < 0 || bullets[i].getPosition().x > window.getSize().x ||
+                    bullets[i].getPosition().y < 0 || bullets[i].getPosition().y > window.getSize().y)
+                {
+                    --onScreen;
+                    bulletsShot[i] = false; // Reset the bullet if it's out of bounds
+                }
+                if (bullets[i].getPosition() != shape.getPosition())
+                {
+                    window.draw(bullets[i]);
+                }
+            }
+            else
+            {
+                // Set unshot bullets to shape.getPosition()
+                bullets[i].setPosition(shape.getPosition());
+            }
+        }
+
         window.display();
         if (dead)
         {
@@ -265,4 +359,3 @@ int main()
 
     return 0;
 }
-

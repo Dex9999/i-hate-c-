@@ -1,5 +1,6 @@
 # depslib dependency file v1.0
-1695048552 source:/home/bossmonster/Documents/i hate c++/sfml/sfmllmao/main.cpp
+1695138121 source:/home/bossmonster/Documents/i hate c++/sfml/sfmllmao/main.cpp
 	<SFML/Graphics.hpp>
 	<cmath>
+	<iostream>
 
