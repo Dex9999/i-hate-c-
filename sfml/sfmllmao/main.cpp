@@ -18,6 +18,8 @@ int main()
     shape.setFillColor(sf::Color::Green);
     shape.setOrigin(40.f, 40.f);
     shape.setPosition(shape.getPosition().x + shape.getOrigin().x, shape.getPosition().y + shape.getOrigin().y);
+    int gamePoints = 0;
+
 
     sf::CircleShape enemy(40.f);
     enemy.setFillColor(sf::Color::Red);
@@ -274,15 +276,23 @@ int main()
             {
                 if (enemyLives == 3)
                 {
-                    enemy.setFillColor(sf::Color::Blue);
-                }
-                else if (enemyLives == 2)
+                    enemy.setFillColor(sf::Color::Red);
+                } else if (enemyLives == 2)
                 {
-                    enemy.setFillColor(sf::Color::Green);
+                    enemy.setFillColor(sf::Color::Blue);
                 }
                 else if (enemyLives == 1)
                 {
+                    enemy.setFillColor(sf::Color::Green);
+                }
+                else if (enemyLives == 0)
+                {
                     enemy.setFillColor(sf::Color::Transparent);
+                    // pre increment <3
+                    ++gamePoints;
+                    enemy.setPosition(rand() % window.getSize().x, rand() % window.getSize().y);
+                    enemy.setFillColor(sf::Color::Blue);
+                    enemyLives = 3;
                 }
                 --enemyLives;
                 bulletsShot[i] = false;
@@ -306,7 +316,7 @@ int main()
         }
         else
         {
-            text.setString(std::to_string(position.x) + ", " + std::to_string(position.y) + "\n" + std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
+            text.setString(std::to_string(gamePoints) +"\n"+std::to_string(enemyLives)+ "\n" + std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
         }
         enemy.move(0.0001 * (position.x - enemypos.x), 0.0001 * (position.y - enemypos.y));
 
