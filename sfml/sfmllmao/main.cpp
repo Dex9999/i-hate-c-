@@ -274,25 +274,25 @@ int main()
         {
             if (bullets[i].getGlobalBounds().intersects(enemyhitbox) && bulletsShot[i])
             {
-                if (enemyLives == 3)
+                if (enemyLives == 4)
                 {
                     enemy.setFillColor(sf::Color::Red);
-                } else if (enemyLives == 2)
+                } else if (enemyLives == 3)
                 {
                     enemy.setFillColor(sf::Color::Blue);
                 }
-                else if (enemyLives == 1)
+                else if (enemyLives == 2)
                 {
                     enemy.setFillColor(sf::Color::Green);
                 }
-                else if (enemyLives == 0)
+                else if (enemyLives == 1)
                 {
                     enemy.setFillColor(sf::Color::Transparent);
                     // pre increment <3
                     ++gamePoints;
                     enemy.setPosition(rand() % window.getSize().x, rand() % window.getSize().y);
-                    enemy.setFillColor(sf::Color::Blue);
-                    enemyLives = 3;
+                    enemy.setFillColor(sf::Color::Red);
+                    enemyLives = 4;
                 }
                 --enemyLives;
                 bulletsShot[i] = false;
