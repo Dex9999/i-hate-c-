@@ -151,11 +151,11 @@ int main()
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
         {
-            if (bulletelapsed.asMilliseconds() > 100)
+            if (bulletelapsed.asMilliseconds() > 200)
             {
                 if (onScreen < 3)
                 {
-                    std::cout << onScreen << "\n";
+                    // std::cout << onScreen << "\n";
                     bulletsShot[onScreen] = true;
 
                     float bulletSpeed = 1.0f;
@@ -291,6 +291,18 @@ int main()
                     // pre increment <3
                     ++gamePoints;
                     enemy.setPosition(rand() % window.getSize().x, rand() % window.getSize().y);
+                    sf::Vector2f playerPosition = shape.getPosition();
+                    sf::Vector2f enemyPosition = enemy.getPosition();
+                    float minDistance = 250.0f; // Minimum distance between player and enemy
+
+                    while (std::sqrt(std::pow(playerPosition.x - enemyPosition.x, 2) +
+                                    std::pow(playerPosition.y - enemyPosition.y, 2)) < minDistance)
+                    {
+                        // Reposition the enemy to a random location
+                        enemy.setPosition(rand() % window.getSize().x, rand() % window.getSize().y);
+                        enemyPosition = enemy.getPosition(); // Update enemy position
+                    }
+
                     enemy.setFillColor(sf::Color::Red);
                     enemyLives = 4;
                 }
@@ -316,7 +328,7 @@ int main()
         }
         else
         {
-            text.setString(std::to_string(gamePoints) +"\n"+std::to_string(enemyLives)+ "\n" + std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
+            text.setString(std::to_string(gamePoints)); //+"\n"+std::to_string(enemyLives)+ "\n" + std::to_string(enemypos.x) + ", " + std::to_string(enemypos.y));
         }
         enemy.move(0.0001 * (position.x - enemypos.x), 0.0001 * (position.y - enemypos.y));
 
