@@ -30,6 +30,11 @@ int main()
 
     long long int change = 0;
     change = (moneyGiven-totalPrice)*100;
+    if(moneyGiven == 0){
+        std::cout << "\n"<<std::setw(62)<<"Dude you can't just give it to them for free\n";
+    } else if(moneyGiven < 0){
+        std::cout << "\n"<<std::setw(53)<<"You paid them to take it?!?\n";
+    }
 
     if(change<0){
     std::cout << "\n"<<std::setw(54)<<"They still need to give you:\n";
