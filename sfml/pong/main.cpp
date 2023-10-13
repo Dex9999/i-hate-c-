@@ -9,9 +9,18 @@ int main()
     sf::Color red(0xBF1304FF);
     sf::Color white(0xFFFFFFFF);
     sf::CircleShape ball(25.0);
-    ball.setFillColor(red);
+    //ball.setFillColor(red);
     ball.setOrigin(ball.getRadius(), ball.getRadius());
     ball.setPosition(window.getSize().x/2,window.getSize().y/2);
+
+    sf::Image icon;
+    if (icon.loadFromFile("icon.png")) {
+        window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+    }
+    sf::Texture ballTexture;
+    if (ballTexture.loadFromFile("pong.png")) {
+        ball.setTexture(&ballTexture);
+    }
 
     sf::RectangleShape p1;
     p1.setSize(sf::Vector2f(20, 125));
