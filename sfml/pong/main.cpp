@@ -128,7 +128,7 @@ int main()
             float normalizedRelativeIntersectY = relativeIntersectY / (p1.getSize().y / 2);
 
             // bounce angle based on the normalized relative position
-            float bounceAngle = normalizedRelativeIntersectY * 90.0f;
+            float bounceAngle = normalizedRelativeIntersectY * 90.f;
 
             // y velocity
             float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
