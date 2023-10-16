@@ -6,10 +6,9 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode(800, 600), "Pong!");
 
-    sf::Color red(0xBF1304FF);
     sf::Color white(0xFFFFFFFF);
     sf::CircleShape ball(25.0);
-    //ball.setFillColor(red);
+    ball.setFillColor(white);
     ball.setOrigin(ball.getRadius(), ball.getRadius());
     ball.setPosition(window.getSize().x/2,window.getSize().y/2);
 
@@ -17,10 +16,10 @@ int main()
     if (icon.loadFromFile("icon.png")) {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
-    sf::Texture ballTexture;
-    if (ballTexture.loadFromFile("pong.png")) {
-        ball.setTexture(&ballTexture);
-    }
+    //sf::Texture ballTexture;
+    //if (ballTexture.loadFromFile("pong.png")) {
+    //    ball.setTexture(&ballTexture);
+    //}
 
     sf::RectangleShape p1;
     p1.setSize(sf::Vector2f(20, 125));
@@ -65,7 +64,7 @@ int main()
     label.setOrigin(label.getLocalBounds().left + 100, 0);
     label.setPosition(window.getSize().x/2+95, 5);
 
-    long long int score1 = 0;
+    long long int score1 = 10;
     long long int score2 = 0;
     long long int rally = 0;
 
@@ -163,7 +162,7 @@ int main()
 
         rallyText.setString(std::to_string(rally));
 
-        ball.move(velocity.x,velocity.y);
+
 
         //fix score offset
         p1score.setOrigin(p2score.getLocalBounds().left + 100, 0);
@@ -173,6 +172,14 @@ int main()
 
         // Clear screen
         window.clear();
+        if(score1 == 11 || score2 == 11){
+            rallyText.setString("Game Over!");
+            rallyText.setCharacterSize(100);
+            rallyText.setPosition(window.getSize().x/2-125, window.getSize().y/2-150);
+            ball.setScale(0,0);
+        } else{
+            ball.move(velocity.x,velocity.y);
+        }
 
         window.draw(p1score);
         window.draw(p2score);
@@ -181,7 +188,6 @@ int main()
         window.draw(ball);
         window.draw(p1);
         window.draw(p2);
-
 
 
         // Update the window
