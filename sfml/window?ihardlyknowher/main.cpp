@@ -7,11 +7,18 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode(1, 1), "Pong!");
 
-    sf::RenderWindow ball(sf::VideoMode(75, 50), "boing");
+    sf::RenderWindow ball(sf::VideoMode(400, 200), "boing");
     sf::Color red(0xBF1304FF);
     sf::Color white(0xFFFFFFFF);
     //ball.setFillColor(red);
     ball.setPosition(sf::Vector2i(screen.width/2-37,screen.height/2-25));
+
+    //ballpos floats
+    float x = 0.0f;  // Initial x position
+    float y = 0.0f;  // Initial y position
+
+    float dx = 2.0f; // Horizontal speed
+    float dy = 2.0f; // Vertical speed
 
     sf::Image icon;
     if (icon.loadFromFile("icon.png")) {
@@ -53,28 +60,25 @@ int main()
         ballPosition = ball.getPosition();
         p1Position = p1.getPosition();
 
+        //update ball pos
+        x += dx;
+        y += dy;
+
         // boundary bounce
         //x reset as they're points
-        if(ball.getPosition().x > window.getSize().x - 25){
-            //flip velocity x
-            rally = 0;
+        if (x < 0 || x + ball.getSize().x > screen.width) {
+            dx = -dx; // Reverse horizontal direction on collision
 
-            velocity.x = -velocity.x;
-            ball.setPosition(sf::Vector2i(screen.width/2,window.getSize().y/2));
-        } else if (ball.getPosition().x < 0 + 25){
-            rally = 0;
+            // rally = 0;
 
-            velocity.x = -velocity.x;
-
-            ball.setPosition(sf::Vector2i(screen.width/2,window.getSize().y/2));
+            // velocity.x = -velocity.x;
+            // ball.setPosition(sf::Vector2i(screen.width/2,window.getSize().y/2));
+        }
+        if (y < 0 || y + ball.getSize().y > screen.height) {
+            dy = -dy; // Reverse vertical direction on collision
+            // velocity.y = -velocity.y;
         }
 
-        if(ball.getPosition().y > screen.height - 25){
-            //flip velocity y
-            velocity.y = -velocity.y;
-        } else if (ball.getPosition().y < 0 + 25){
-            velocity.y = -velocity.y;
-        }
 
         //movement
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && p1.getPosition().y>0+15){
@@ -148,21 +152,26 @@ int main()
 
 
         // Check for collisions with screen boundaries
-        if (ballPosition.x > screen.width - 75 || ballPosition.x < 0)
+        if (ballPosition.x > screen.width || ballPosition.x < 0)
         {
             // Reverse the X velocity when hitting left or right screen boundary
             velocity.x = -velocity.x;
         }
 
-        if (ballPosition.y > screen.height - 50 || ballPosition.y < 0)
+        if (ballPosition.y > screen.height || ballPosition.y < 0)
         {
             // Reverse the Y velocity when hitting top or bottom screen boundary
             velocity.y = -velocity.y;
         }
 
-        ball.setPosition(ballPosition);
+        ball.setPosition(sf::Vector2i(static_cast<int>(x), static_cast<int>(y)));
 
+        ball.clear();
+        ball.display();
         p1.setPosition(p1Position);
+
+
+        p1.display();
 
         //fix score offset
         // p1score.setOrigin(p2score.getLocalBounds().left + 100, 0);
