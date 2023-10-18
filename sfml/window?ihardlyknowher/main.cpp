@@ -7,7 +7,7 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode(1, 1), "Pong!");
 
-    sf::RenderWindow ball(sf::VideoMode(400, 200), "boing");
+    sf::RenderWindow ball(sf::VideoMode(75, 50), "boing");
     sf::Color red(0xBF1304FF);
     sf::Color white(0xFFFFFFFF);
     //ball.setFillColor(red);
@@ -17,8 +17,8 @@ int main()
     float x = 0.0f;  // Initial x position
     float y = 0.0f;  // Initial y position
 
-    float dx = 2.0f; // Horizontal speed
-    float dy = 2.0f; // Vertical speed
+    float dx = 1.0f; // Horizontal speed
+    float dy = 1.0f; // Vertical speed
 
     sf::Image icon;
     if (icon.loadFromFile("icon.png")) {
@@ -74,7 +74,8 @@ int main()
             // velocity.x = -velocity.x;
             // ball.setPosition(sf::Vector2i(screen.width/2,window.getSize().y/2));
         }
-        if (y < 0 || y + ball.getSize().y > screen.height) {
+        //needs adjustment for toolvbar thing
+        if (y < 0 || y + ball.getSize().y > screen.height-50) {
             dy = -dy; // Reverse vertical direction on collision
             // velocity.y = -velocity.y;
         }
@@ -99,7 +100,8 @@ int main()
         }
 
         if (p1hit) {
-            velocity.x = -velocity.x;
+            //velocity.x = -velocity.x;
+            dx = -dx;
 
             // calculate where from center the ball hit
             float relativeIntersectY = (p1.getPosition().y + p1.getSize().y / 2) - ball.getPosition().y;
