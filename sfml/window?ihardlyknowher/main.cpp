@@ -191,14 +191,15 @@ int main()
             float bounceAngleRadians = bounceAngle * 3.14159265359 / 180.0;
 
             // Update the direction of the ball
-            dx = velocity.x * cos(bounceAngleRadians);
-            dy = velocity.y * sin(bounceAngleRadians);
+            dx = velocity.x * 4 * cos(bounceAngleRadians);
+            dy = velocity.y * 4 * sin(bounceAngleRadians);
 
             if (rallyCooldown.getElapsedTime() > rallyCooldownTime) {
 
                 ++rally;
                 rallyCooldown.restart();
             }
+            std::cout << relativeIntersectY << "|" << normalizedRelativeIntersectY << "|" << bounceAngle << "|" << bounceAngleRadians << "|" <<dx<<","<<dy;
         }
         if (ballHitbox.intersects(p2Hitbox)) {
             // Calculate where from the center the ball hit
@@ -214,8 +215,8 @@ int main()
             float bounceAngleRadians = bounceAngle * 3.14159265359 / 180.0;
 
             // Update the direction of the ball
-            dx = -velocity.x * cos(bounceAngleRadians);
-            dy = velocity.y * sin(bounceAngleRadians);
+            dx = -velocity.x * 4 * cos(bounceAngleRadians);
+            dy = velocity.y * 4 * sin(bounceAngleRadians);
 
             if (rallyCooldown.getElapsedTime() > rallyCooldownTime) {
 
