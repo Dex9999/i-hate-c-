@@ -43,6 +43,9 @@ int main()
         p1.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
         p2.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
         ball.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+        rallyWindow.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+        p1ScoreWindow.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+        p2ScoreWindow.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
 
     //scoring
