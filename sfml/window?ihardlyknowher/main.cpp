@@ -38,7 +38,8 @@ int main()
 
 
     sf::Image icon;
-    if (icon.loadFromFile("icon.png")) {
+    if (icon.loadFromFile("icon.png"))
+    {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
         p1.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
         p2.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
@@ -72,7 +73,7 @@ int main()
     rallyText.setStyle(sf::Text::Bold);
     rallyText.setOrigin(rallyText.getLocalBounds().left + 50, 0);
     rallyText.setPosition(rallyWindow.getSize().x/2 + 22, 15);
-    sf::Clock rallyCooldown;
+    sf::Clock rallyClock;
     const sf::Time rallyCooldownTime = sf::seconds(1.0f);
 
 
@@ -85,45 +86,54 @@ int main()
     sf::Vector2i p1Position = p1.getPosition();
     sf::Vector2i p2Position = p2.getPosition();
 
-    while (window.isOpen()) {
+    while (window.isOpen())
+    {
         // Process events
         sf::Event event;
-        while (window.pollEvent(event)) {
+        while (window.pollEvent(event))
+        {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
         sf::Event ballevent;
-        while (ball.pollEvent(ballevent)) {
+        while (ball.pollEvent(ballevent))
+        {
             if (ballevent.type == sf::Event::Closed)
                 ball.close();
         }
         sf::Event p1event;
-        while (p1.pollEvent(p1event)) {
+        while (p1.pollEvent(p1event))
+        {
             if (p1event.type == sf::Event::Closed)
                 p1.close();
         }
         sf::Event p2event;
-        while (p2.pollEvent(p2event)) {
+        while (p2.pollEvent(p2event))
+        {
             if (p2event.type == sf::Event::Closed)
                 p2.close();
         }
         sf::Event rallyevent;
-        while (rallyWindow.pollEvent(rallyevent)) {
+        while (rallyWindow.pollEvent(rallyevent))
+        {
             if (rallyevent.type == sf::Event::Closed)
                 rallyWindow.close();
         }
         sf::Event pscoreevent;
-        while (p1ScoreWindow.pollEvent(pscoreevent)) {
+        while (p1ScoreWindow.pollEvent(pscoreevent))
+        {
             if (pscoreevent.type == sf::Event::Closed)
                 p1ScoreWindow.close();
         }
         sf::Event p2scoreevent;
-        while (p2ScoreWindow.pollEvent(p2scoreevent)) {
+        while (p2ScoreWindow.pollEvent(p2scoreevent))
+        {
             if (p2scoreevent.type == sf::Event::Closed)
                 p2ScoreWindow.close();
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)){
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
+        {
             ball.close();
             window.close();
             p1.close();
@@ -141,7 +151,8 @@ int main()
         y += dy;
 
         // Boundary bounce
-        if (x < 0 ) {
+        if (x < 0 )
+        {
             p1score.setString(std::to_string(++score1));
             rally = 0;
 
@@ -149,7 +160,8 @@ int main()
             y = screen.height / 2 - 25;  // Initial y position
             dx = -dx; // Reverse horizontal direction on collision
         }
-        if(x + ball.getSize().x > screen.width){
+        if(x + ball.getSize().x > screen.width)
+        {
             p2score.setString(std::to_string(++score2));
             rally = 0;
 
@@ -157,19 +169,26 @@ int main()
             y = screen.height / 2 - 25;  // Initial y position
             dx = -dx; // Reverse horizontal direction on collision
         }
-        if (y < 0 || y + ball.getSize().y > screen.height - 60) {
+        if (y < 0 || y + ball.getSize().y > screen.height - 60)
+        {
             dy = -dy; // Reverse vertical direction on collision
         }
 
         // Movement
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && p1.getPosition().y > 0 + 15) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && p1.getPosition().y > 0 + 15)
+        {
             p1Position.y -= 4;
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && p1.getPosition().y < screen.height - 150) {
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && p1.getPosition().y < screen.height - 150)
+        {
             p1Position.y += 4;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && p2.getPosition().y > 0 + 15) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && p2.getPosition().y > 0 + 15)
+        {
             p2Position.y -= 4;
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && p2.getPosition().y < screen.height - 150) {
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && p2.getPosition().y < screen.height - 150)
+        {
             p2Position.y += 4;
         }
 
@@ -177,8 +196,12 @@ int main()
         sf::FloatRect p2Hitbox(p2.getPosition().x, p2.getPosition().y, p2.getSize().x, p2.getSize().y);
         sf::FloatRect ballHitbox(ball.getPosition().x, ball.getPosition().y, ball.getSize().x, ball.getSize().y);
 
-        if (ballHitbox.intersects(p1Hitbox)) {
-            // Calculate where from center the ball hit
+
+        if (ballHitbox.intersects(p1Hitbox))
+        {
+            dx = -dx;
+
+            // Calculate where from the center the ball hit
             float relativeIntersectY = (p1.getPosition().y + p1.getSize().y / 2) - (ball.getPosition().y + ball.getSize().y / 2);
 
             // Normalize between -1 and 1
@@ -191,17 +214,23 @@ int main()
             float bounceAngleRadians = bounceAngle * 3.14159265359 / 180.0;
 
             // Update the direction of the ball
-            dx = velocity.x * 4 * cos(bounceAngleRadians);
-            dy = velocity.y * 4 * sin(bounceAngleRadians);
+            float speed = std::sqrt(dx * dx + dy * dy);
+            float angleRadians = bounceAngleRadians;
 
-            if (rallyCooldown.getElapsedTime() > rallyCooldownTime) {
+            dx = speed * std::cos(angleRadians);
+            dy = -speed * std::sin(angleRadians);
 
+            if (rallyClock.getElapsedTime().asSeconds() >= 0.5)
+            {
                 ++rally;
-                rallyCooldown.restart();
+                rallyClock.restart();
             }
-            std::cout << relativeIntersectY << "|" << normalizedRelativeIntersectY << "|" << bounceAngle << "|" << bounceAngleRadians << "|" <<dx<<","<<dy;
         }
-        if (ballHitbox.intersects(p2Hitbox)) {
+
+        if (ballHitbox.intersects(p2Hitbox))
+        {
+            dx = -dx;
+
             // Calculate where from the center the ball hit
             float relativeIntersectY = (p2.getPosition().y + p2.getSize().y / 2) - (ball.getPosition().y + ball.getSize().y / 2);
 
@@ -215,15 +244,19 @@ int main()
             float bounceAngleRadians = bounceAngle * 3.14159265359 / 180.0;
 
             // Update the direction of the ball
-            dx = -velocity.x * 4 * cos(bounceAngleRadians);
-            dy = velocity.y * 4 * sin(bounceAngleRadians);
+            float speed = std::sqrt(dx * dx + dy * dy);
+            float angleRadians = bounceAngleRadians;
 
-            if (rallyCooldown.getElapsedTime() > rallyCooldownTime) {
+            dx = -speed * std::cos(angleRadians);
+            dy = -speed * std::sin(angleRadians);
 
+            if (rallyClock.getElapsedTime().asSeconds() >= 0.5)
+            {
                 ++rally;
-                rallyCooldown.restart();
+                rallyClock.restart();
             }
         }
+
 
         rallyText.setString(std::to_string(rally));
 
