@@ -18,7 +18,7 @@ int main()
         std::cout << "Prime numbers:\n";
 
         // include for all factors
-        for(int i = 1; i < num; i++)
+        for(int i = 2; i < num; i++)
         {
             bool prime = true;
             for(int j = 2; j < i - 1; j++)
