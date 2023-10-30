@@ -2,14 +2,47 @@
 #include <iostream>
 #include <ctime>
 #include <cmath>
+#include <fstream>
+#include <filesystem>
 int main()
 {
     int currBrick = 0;
+    int randomImage = 0;
     srand(time(NULL));
 
     sf::RenderWindow window(sf::VideoMode(800, 600), "Bricks");
 
+    //load silly photos
+    std::vector<sf::Texture> images;
+    std::vector<std::filesystem::path> directories;
+    directories.push_back(std::filesystem::path(getenv("HOME")) / "Documents");
+    directories.push_back(std::filesystem::path(getenv("HOME")) / "Downloads");
+
+    for (const std::filesystem::path& dirPath : directories) {
+        for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+            std::filesystem::path filePath = entry.path();
+
+            if (std::filesystem::is_regular_file(filePath)) {
+                std::string fileName = filePath.filename().string();
+                std::string fileExtension = filePath.extension().string();
+
+                // if valid texture image type
+                if (fileExtension == ".jpg" || fileExtension == ".gif" || fileExtension == ".png" ||
+                    fileExtension == ".bmp" || fileExtension == ".tga" || fileExtension == ".psd" ||
+                    fileExtension == ".hdr" || fileExtension == ".pic" || fileExtension == ".pnm") {
+                    if(rand() % 100 <= 5){
+                        sf::Texture texture;
+                        texture.loadFromFile(dirPath / fileName);
+                        std::cout << "Loaded " << fileName << " from " << dirPath << "\n";
+                        images.push_back(texture);
+                    }
+                }
+            }
+        }
+    }
+
     sf::RectangleShape brick[50];
+    int brickDmg[50];
 
     sf::RectangleShape block;
 
@@ -19,31 +52,43 @@ int main()
         {
             currBrick = i+j*10;
 
-            brick[currBrick].setSize(sf::Vector2f(70, 20));
-            brick[currBrick].setPosition(i*80+5, j*50+window.getSize().y/4);
-            brick[currBrick].setFillColor(sf::Color (rand() % 255 + 0,rand() % 255 + 0,rand() % 255 + 0));
-            /*switch (j)
+            brick[currBrick].setSize(sf::Vector2f(70, 70));
+            brick[currBrick].setPosition(i*80+5, j*70+window.getSize().y/4);
+
+
+            randomImage = rand() % images.size();
+            brick[currBrick].setTexture(&images[randomImage]);
+
+            //[currBrick].setFillColor(sf::Color (rand() % 255 + 0,rand() % 255 + 0,rand() % 255 + 0));
+            switch (j)
             {
                 case 0:
                     brick[currBrick].setFillColor(sf::Color::Red);
+                    brickDmg[currBrick] = 5;
                     break;
                 case 1:
-                    brick[currBrick].setFillColor(sf::Color::Green);
+                    brick[currBrick].setFillColor(sf::Color (255, 150, 0));
+                    brickDmg[currBrick] = 4;
                     break;
                 case 2:
-                    brick[currBrick].setFillColor(sf::Color::Blue);
+                    brick[currBrick].setFillColor(sf::Color::Yellow);
+                    brickDmg[currBrick] = 3;
                     break;
                 case 3:
-                    brick[currBrick].setFillColor(sf::Color::Yellow);
+                    brick[currBrick].setFillColor(sf::Color::Green);
+                    brickDmg[currBrick] = 2;
                     break;
                 case 4:
-                    brick[currBrick].setFillColor(sf::Color::Magenta);
+                    brick[currBrick].setFillColor(sf::Color::Blue);
+                    brickDmg[currBrick] = 1;
                     break;
                 default:
                     break;
-            }*/
+            }
         }
     }
+
+
 
     sf::RectangleShape p1;
     p1.setSize(sf::Vector2f(125, 20));
@@ -120,8 +165,37 @@ int main()
             {
                 if(k<51)
                 {
-                    brick[k].setPosition(0-100,0-100);
+
+
+                    switch (brickDmg[k]) {
+                        case 0:
+                            break;
+                        case 1:
+                            brick[k].setPosition(0-100,0-100);
+                            brickDmg[k] = 0;
+                            break;
+                        case 2:
+                            brick[k].setFillColor(sf::Color::Blue);
+                            brickDmg[k] = 1;
+                            break;
+                        case 3:
+                            brick[k].setFillColor(sf::Color::Green);
+                            brickDmg[k] = 2;
+                            break;
+                        case 4:
+                            brick[k].setFillColor(sf::Color::Yellow);
+                            brickDmg[k] = 3;
+                            break;
+                        case 5:
+                            brick[k].setFillColor(sf::Color (255, 150, 0));
+                            brickDmg[k] = 4;
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
+                //bounce code
                 velocity.y = -velocity.y;
                 // calculate where from center the ball hit
                 float relativeIntersectX = (block.getPosition().x + block.getSize().x / 2) - ball.getPosition().x;

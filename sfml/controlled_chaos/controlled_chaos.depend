@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1698674643 source:/home/bossmonster/Documents/i hate c++/sfml/controlled_chaos/main.cpp
+	<SFML/Graphics.hpp>
+	<iostream>
+	<sstream>
+

@@ -1,7 +1,9 @@
 # depslib dependency file v1.0
-1698418891 source:/home/bossmonster/Documents/i hate c++/sfml/breakout/main.cpp
+1698679068 source:/home/bossmonster/Documents/i hate c++/sfml/breakout/main.cpp
 	<SFML/Graphics.hpp>
 	<iostream>
 	<ctime>
 	<cmath>
+	<fstream>
+	<filesystem>
 
