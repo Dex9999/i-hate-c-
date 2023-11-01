@@ -4,15 +4,13 @@
 #include <cmath>
 #include <fstream>
 #include <filesystem>
-
 int main()
 {
     int currBrick = 0;
     int randomImage = 0;
     srand(time(NULL));
-    int lives = 3;
 
-    sf::RenderWindow window(sf::VideoMode(800, 800), "Bricks");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Bricks");
 
     //load silly photos
     std::vector<sf::Texture> images;
@@ -55,10 +53,9 @@ int main()
             currBrick = i+j*10;
 
             brick[currBrick].setSize(sf::Vector2f(70, 70));
-            brick[currBrick].setOrigin(sf::Vector2f(brick[currBrick].getSize().x/2, brick[currBrick].getSize().y/2));
-            brick[currBrick].setPosition(i*80+5, j*70+window.getSize().y/5);
+            brick[currBrick].setPosition(i*80+5, j*70+window.getSize().y/4);
 
-            //apply silly photo
+
             randomImage = rand() % images.size();
             brick[currBrick].setTexture(&images[randomImage]);
 
@@ -103,9 +100,9 @@ int main()
     sf::CircleShape ball(15.0);
     ball.setFillColor(white);
     ball.setOrigin(ball.getRadius(), ball.getRadius());
-    ball.setPosition(window.getSize().x/2,window.getSize().y-150);
+    ball.setPosition(window.getSize().x/2,window.getSize().y-550);
 
-    sf::Vector2f velocity(1,1);
+    sf::Vector2f velocity(0.5, 0.5);
 
 
     while (window.isOpen())
@@ -145,19 +142,14 @@ int main()
             velocity.y = -velocity.y;
         }
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && p1.getPosition().x>0+15)
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && p1.getPosition().x>0+10)
         {
             p1.move(-1,0);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && p1.getPosition().x<window.getSize().x-150)
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && p1.getPosition().x<window.getSize().x-125)
         {
             p1.move(1,0);
         }
-
-        sf::Vector2f ballPosition = ball.getPosition();
-                    ballPosition.x += velocity.x;
-                    ballPosition.y += velocity.y;
-                    ball.setPosition(ballPosition);
 
         for(int k = 0; k<51; ++k)
         {
@@ -171,8 +163,113 @@ int main()
             }
             if (ball.getGlobalBounds().intersects(block.getGlobalBounds()))
             {
-                if(k<50)
+
+
+                bool x = ball.getPosition().x > block.getPosition().x + block.getSize().x / 2;
+                bool inX = ball.getPosition().x > block.getPosition().x-11 && ball.getPosition().x < block.getPosition().x + block.getSize().x+11;
+                bool y = ball.getPosition().y > block.getPosition().y + block.getSize().y / 2;
+                bool inY = ball.getPosition().y > block.getPosition().y && ball.getPosition().y < block.getPosition().y + block.getSize().y;
+
+                //top
+                if(inX && !y)
                 {
+                    if(block.getPosition().x+block.getSize().x)
+                    //bounce code
+                    velocity.y = -velocity.y;
+                    // calculate where from center the ball hit
+                    float relativeIntersectX = (block.getPosition().x + block.getSize().x / 2) - ball.getPosition().x;
+
+                    // normalize between -1 and 1
+                    float normalizedRelativeIntersectX = relativeIntersectX / (block.getSize().x / 2);
+
+                    // bounce angle based on the normalized relative position
+                    float bounceAngle = normalizedRelativeIntersectX * 90.f;
+
+                    // x velocity
+                    float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                    float angleRadians = bounceAngle * 3.1415926535897932384626433832795028841971693993751f / 180.f;
+                    velocity.x = -speed * std::sin(angleRadians);
+
+                    while(ball.getGlobalBounds().intersects(block.getGlobalBounds())){
+                        ball.setPosition(ball.getPosition().x,ball.getPosition().y-1);
+                    }
+                }
+                //bottom
+                if(inX && y)
+                {
+                    if(block.getPosition().x+block.getSize().x)
+                    //bounce code
+                    velocity.y = -velocity.y;
+                    // calculate where from center the ball hit
+                    float relativeIntersectX = (block.getPosition().x + block.getSize().x / 2) - ball.getPosition().x;
+
+                    // normalize between -1 and 1
+                    float normalizedRelativeIntersectX = relativeIntersectX / (block.getSize().x / 2);
+
+                    // bounce angle based on the normalized relative position
+                    float bounceAngle = normalizedRelativeIntersectX * 90.f;
+
+                    // x velocity
+                    float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                    float angleRadians = bounceAngle * 3.1415926535897932384626433832795028841971693993751f / 180.f;
+                    velocity.x = -speed * std::sin(angleRadians);
+
+                    while(ball.getGlobalBounds().intersects(block.getGlobalBounds())){
+                        ball.setPosition(ball.getPosition().x,ball.getPosition().y+1);
+                    }
+                }
+                //left
+                if(inY && !x)
+                {
+                    if(block.getPosition().y+block.getSize().y)
+                    //bounce code
+                    velocity.x = -velocity.x;
+                    // calculate where from center the ball hit
+                    float relativeIntersectY = (block.getPosition().y + block.getSize().y / 2) - ball.getPosition().y;
+
+                    // normalize between -1 and 1
+                    float normalizedRelativeIntersectY = relativeIntersectY / (block.getSize().y / 2);
+
+                    // bounce angle based on the normalized relative position
+                    float bounceAngle = normalizedRelativeIntersectY * 90.f;
+
+                    // x velocity
+                    float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                    float angleRadians = bounceAngle * 3.1415926535897932384626433832795028841971693993751f / 180.f;
+                    velocity.y = -speed * std::sin(angleRadians);
+                    while(ball.getGlobalBounds().intersects(block.getGlobalBounds())){
+                        ball.setPosition(ball.getPosition().x-1,ball.getPosition().y);
+                    }
+                }
+                //right
+                if(inY && x)
+                {
+                    if(block.getPosition().y+block.getSize().y)
+                    //bounce code
+                    velocity.x = -velocity.x;
+                    // calculate where from center the ball hit
+                    float relativeIntersectY = (block.getPosition().y + block.getSize().y / 2) - ball.getPosition().y;
+
+                    // normalize between -1 and 1
+                    float normalizedRelativeIntersectY = relativeIntersectY / (block.getSize().y / 2);
+
+                    // bounce angle based on the normalized relative position
+                    float bounceAngle = normalizedRelativeIntersectY * 90.f;
+
+                    // x velocity
+                    float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                    float angleRadians = bounceAngle * 3.1415926535897932384626433832795028841971693993751f / 180.f;
+                    velocity.y = -speed * std::sin(angleRadians);
+
+                    while(ball.getGlobalBounds().intersects(block.getGlobalBounds())){
+                        ball.setPosition(ball.getPosition().x+1,ball.getPosition().y);
+                    }
+                }
+
+                if(k<51)
+                {
+
+
                     switch (brickDmg[k]) {
                         case 0:
                             break;
@@ -199,44 +296,18 @@ int main()
                         default:
                             break;
                     }
-
-                    // which axis to reverse based which side it hit
-                    if (std::abs(ball.getPosition().x - brick[k].getPosition().x) > std::abs(ball.getPosition().y - brick[k].getPosition().y)) {
-                        // hit top/bottom
-                        velocity.x = -velocity.x;
-                    } else {
-                        // hit left/right
-                        velocity.y = -velocity.y;
-                    }
-
-
-                } else{
-                    //paddle bounce code
-                    velocity.y = -velocity.y;
-                    // calculate where from center the ball hit
-                    float relativeIntersectX = (block.getPosition().x + block.getSize().x / 2) - ball.getPosition().x;
-
-                    // normalize between -1 and 1
-                    float normalizedRelativeIntersectX = relativeIntersectX / (block.getSize().x / 2);
-
-                    // bounce angle based on the normalized relative position
-                    float bounceAngle = normalizedRelativeIntersectX * 90.f;
-
-                    // x velocity
-                    float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-                    float angleRadians = bounceAngle * 3.1415926535897932384626433832795028841971693993751f / 180.f;
-                    velocity.x = -speed * std::sin(angleRadians);
                 }
+
+                break;
+
             }
 
         }
 
-        if(ball.getPosition().y>=window.getSize().y-25){
-            --lives;
-            ball.setPosition(window.getSize().x/2,window.getSize().y-150);
-            std::cout << lives << "\n";
-        }
-
+        sf::Vector2f ballPosition = ball.getPosition();
+        ballPosition.x += velocity.x;
+        ballPosition.y += velocity.y;
+        ball.setPosition(ballPosition);
 
         window.clear();
         for (int i = 0; i < 50; ++i)
