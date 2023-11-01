@@ -4,11 +4,19 @@
 #include <cmath>
 #include <fstream>
 #include <filesystem>
+#include <SFML/Audio.hpp>
+
 int main()
 {
     int currBrick = 0;
     int randomImage = 0;
     srand(time(NULL));
+
+    //sfx
+    sf::Music music;
+    if (!music.openFromFile("explosion.wav"))
+        return -1; // error
+
 
     sf::RenderWindow window(sf::VideoMode(800, 600), "Bricks");
 
@@ -163,6 +171,7 @@ int main()
             }
             if (ball.getGlobalBounds().intersects(block.getGlobalBounds()))
             {
+                music.play();
 
 
                 bool x = ball.getPosition().x > block.getPosition().x + block.getSize().x / 2;
