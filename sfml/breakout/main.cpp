@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <SFML/Audio.hpp>
+//maybe fix dumb velocity
 
 int main()
 {
@@ -12,13 +13,22 @@ int main()
     int randomImage = 0;
     srand(time(NULL));
 
+    sf::SoundBuffer explosionBuffer;
+    bool loaded = explosionBuffer.loadFromFile("explosion.wav");
+    if(!loaded) { return -1; }
+
+    sf::Sound explosionSound;
+    explosionSound.setBuffer(explosionBuffer);
+    explosionSound.setVolume(50);
+    // see line 183
+
     //sfx
-    sf::Music music;
-    if (!music.openFromFile("explosion.wav"))
-        return -1; // error
+    //sf::Music music;
+    //if (!music.openFromFile("explosion.wav"))
+    //    return -1; // error
 
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Bricks");
+    sf::RenderWindow window(sf::VideoMode(800, 800), "Bricks");
 
     //load silly photos
     std::vector<sf::Texture> images;
@@ -61,7 +71,7 @@ int main()
             currBrick = i+j*10;
 
             brick[currBrick].setSize(sf::Vector2f(70, 70));
-            brick[currBrick].setPosition(i*80+5, j*70+window.getSize().y/4);
+            brick[currBrick].setPosition(i*80+5, j*80+100);
 
 
             randomImage = rand() % images.size();
@@ -108,7 +118,7 @@ int main()
     sf::CircleShape ball(15.0);
     ball.setFillColor(white);
     ball.setOrigin(ball.getRadius(), ball.getRadius());
-    ball.setPosition(window.getSize().x/2,window.getSize().y-550);
+    ball.setPosition(window.getSize().x/2,window.getSize().y-100);
 
     sf::Vector2f velocity(0.5, 0.5);
 
@@ -171,7 +181,7 @@ int main()
             }
             if (ball.getGlobalBounds().intersects(block.getGlobalBounds()))
             {
-                music.play();
+               explosionSound.play();
 
 
                 bool x = ball.getPosition().x > block.getPosition().x + block.getSize().x / 2;
