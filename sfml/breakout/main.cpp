@@ -80,7 +80,7 @@ int main()
 
     sf::Sound loseSound;
     loseSound.setBuffer(loseBuffer);
-    loseSound.setVolume(50);
+    loseSound.setVolume(100);
 
     sf::SoundBuffer winBuffer;
     bool winloaded = winBuffer.loadFromFile("win.wav");
@@ -88,7 +88,7 @@ int main()
 
     sf::Sound winSound;
     winSound.setBuffer(winBuffer);
-    winSound.setVolume(50);
+    winSound.setVolume(100);
 
     // stream background music
     sf::Music music;
@@ -189,7 +189,7 @@ int main()
     ball.setOrigin(ball.getRadius(), ball.getRadius());
     ball.setPosition(window.getSize().x/2,window.getSize().y-100);
 
-    sf::Vector2f velocity(1, 1);
+    sf::Vector2f velocity(0.5, 0.5);
 
 
     while (window.isOpen())
@@ -364,7 +364,7 @@ int main()
                 if(k<51)
                 {
                     if(brickDmg[k] > 1 && brickDmg[k] <= 5) {blockSound.play();}
-                    score += 100;
+                    if(brickDmg[k] >= 1){score += 100;}
 
                     switch (brickDmg[k]) {
                         case 0:
@@ -436,7 +436,7 @@ int main()
             velocity.y = 0;
             endText.setString("You Win!");
             endText.setOrigin(endText.getLocalBounds().left + 100, 0);
-            endText.setPosition(window.getSize().x/4+10, window.getSize().y/3);
+            endText.setPosition(window.getSize().x/4+60, window.getSize().y/3);
 
             window.draw(endText);
 
@@ -444,7 +444,7 @@ int main()
             winSound.play();
             clock.restart();
             sf::Time elapsedTime(clock.getElapsedTime());
-            while (elapsedTime.asSeconds() < 5.0) {
+            while (elapsedTime.asSeconds() < 6.0) {
                 elapsedTime = clock.getElapsedTime();
                 // Wait for 1 second
             }
