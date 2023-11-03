@@ -12,6 +12,26 @@ int main()
     int currBrick = 0;
     int randomImage = 0;
     srand(time(NULL));
+    sf::Clock clock;
+
+    int score = 0;
+    int lives = 3;
+
+    sf::Font font;
+    font.loadFromFile("font.ttf");
+
+    sf::Text endText;
+    endText.setFont(font);
+    endText.setCharacterSize(100);
+    endText.setFillColor(sf::Color::White);
+    endText.setStyle(sf::Text::Bold);
+
+    sf::Text scoreText;
+    scoreText.setFont(font);
+    scoreText.setCharacterSize(50);
+    scoreText.setFillColor(sf::Color::White);
+    scoreText.setStyle(sf::Text::Bold);
+    scoreText.setPosition(10,10);
 
     sf::SoundBuffer explosionBuffer;
     bool loaded = explosionBuffer.loadFromFile("explosion.wav");
@@ -19,14 +39,63 @@ int main()
 
     sf::Sound explosionSound;
     explosionSound.setBuffer(explosionBuffer);
-    explosionSound.setVolume(50);
-    // see line 183
+    explosionSound.setVolume(100);
 
-    //sfx
-    //sf::Music music;
-    //if (!music.openFromFile("explosion.wav"))
-    //    return -1; // error
+    sf::SoundBuffer paddleBuffer;
+    bool padloaded = paddleBuffer.loadFromFile("paddleHit.wav");
+    if(!padloaded) { return -1; }
 
+    sf::Sound paddleSound;
+    paddleSound.setBuffer(paddleBuffer);
+    paddleSound.setVolume(100);
+
+    sf::SoundBuffer blockBuffer;
+    bool bloaded = blockBuffer.loadFromFile("blockHit.wav");
+    if(!bloaded) { return -1; }
+
+    sf::Sound blockSound;
+    blockSound.setBuffer(blockBuffer);
+    blockSound.setVolume(100);
+
+    sf::SoundBuffer wallBuffer;
+    bool walloaded = wallBuffer.loadFromFile("wallHit.wav");
+    if(!walloaded) { return -1; }
+
+    sf::Sound wallSound;
+    wallSound.setBuffer(wallBuffer);
+    wallSound.setVolume(80);
+
+
+    sf::SoundBuffer lifeLossBuffer;
+    bool llLoaded = lifeLossBuffer.loadFromFile("lifeLoss.wav");
+    if(!llLoaded) { return -1; }
+
+    sf::Sound lifeLossSound;
+    lifeLossSound.setBuffer(lifeLossBuffer);
+    lifeLossSound.setVolume(100);
+
+    sf::SoundBuffer loseBuffer;
+    bool losloaded = loseBuffer.loadFromFile("lose.wav");
+    if(!losloaded) { return -1; }
+
+    sf::Sound loseSound;
+    loseSound.setBuffer(loseBuffer);
+    loseSound.setVolume(50);
+
+    sf::SoundBuffer winBuffer;
+    bool winloaded = winBuffer.loadFromFile("win.wav");
+    if(!winloaded) { return -1; }
+
+    sf::Sound winSound;
+    winSound.setBuffer(winBuffer);
+    winSound.setVolume(50);
+
+    // stream background music
+    sf::Music music;
+    if (!music.openFromFile("music.wav"))
+        return -1;
+    music.setLoop(true);
+    music.play();
 
     sf::RenderWindow window(sf::VideoMode(800, 800), "Bricks");
 
@@ -120,7 +189,7 @@ int main()
     ball.setOrigin(ball.getRadius(), ball.getRadius());
     ball.setPosition(window.getSize().x/2,window.getSize().y-100);
 
-    sf::Vector2f velocity(0.5, 0.5);
+    sf::Vector2f velocity(1, 1);
 
 
     while (window.isOpen())
@@ -147,17 +216,22 @@ int main()
         if(ball.getPosition().x > window.getSize().x - 25 || ball.getPosition().x < 0 + 25)
         {
             velocity.x = -velocity.x;
+            wallSound.play();
         }
 
         if(ball.getPosition().y > window.getSize().y - 25)
         {
             // lose a life
             velocity.y = -velocity.y;
-            //ball.setPosition(window.getSize().x/2,window.getSize().y/2);
+            lives -= 1;
+            lifeLossSound.play();
+
+            ball.setPosition(window.getSize().x/2,window.getSize().y-100);
         }
         else if (ball.getPosition().y < 0 + 25)
         {
             velocity.y = -velocity.y;
+            wallSound.play();
         }
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && p1.getPosition().x>0+10)
@@ -174,6 +248,7 @@ int main()
             if(k==50)
             {
                 block = p1;
+
             }
             else
             {
@@ -181,7 +256,8 @@ int main()
             }
             if (ball.getGlobalBounds().intersects(block.getGlobalBounds()))
             {
-               explosionSound.play();
+                if(k==50) {paddleSound.play();}
+
 
 
                 bool x = ball.getPosition().x > block.getPosition().x + block.getSize().x / 2;
@@ -287,13 +363,15 @@ int main()
 
                 if(k<51)
                 {
-
+                    if(brickDmg[k] > 1 && brickDmg[k] <= 5) {blockSound.play();}
+                    score += 100;
 
                     switch (brickDmg[k]) {
                         case 0:
                             break;
                         case 1:
                             brick[k].setPosition(0-100,0-100);
+                            explosionSound.play();
                             brickDmg[k] = 0;
                             break;
                         case 2:
@@ -328,13 +406,68 @@ int main()
         ballPosition.y += velocity.y;
         ball.setPosition(ballPosition);
 
+        scoreText.setString(std::to_string(score));
+
         window.clear();
-        for (int i = 0; i < 50; ++i)
-        {
-            window.draw(brick[i]);
+        if (lives <= 0) {
+            music.stop();
+            ball.setPosition(window.getSize().x + 100,0);
+            velocity.x = 0;
+            velocity.y = 0;
+            endText.setString("You Lose!");
+            endText.setOrigin(endText.getLocalBounds().left + 100, 0);
+            endText.setPosition(window.getSize().x/4+10, window.getSize().y/3);
+
+            window.draw(endText);
+
+            window.display();
+            loseSound.play();
+            clock.restart();
+            sf::Time elapsedTime(clock.getElapsedTime());
+            while (elapsedTime.asSeconds() < 5.0) {
+                elapsedTime = clock.getElapsedTime();
+                // Wait for 1 second
+            }
+            window.close();
+        } else if (score >= 15000) {
+            music.stop();
+            ball.setPosition(window.getSize().x + 100,0);
+            velocity.x = 0;
+            velocity.y = 0;
+            endText.setString("You Win!");
+            endText.setOrigin(endText.getLocalBounds().left + 100, 0);
+            endText.setPosition(window.getSize().x/4+10, window.getSize().y/3);
+
+            window.draw(endText);
+
+            window.display();
+            winSound.play();
+            clock.restart();
+            sf::Time elapsedTime(clock.getElapsedTime());
+            while (elapsedTime.asSeconds() < 5.0) {
+                elapsedTime = clock.getElapsedTime();
+                // Wait for 1 second
+            }
+            window.close();
+        } else {
+        // add win condition later
+            for (int i = 0; i < 50; ++i)
+            {
+                window.draw(brick[i]);
+            }
+            window.draw(ball);
+            window.draw(p1);
+            window.draw(scoreText);
+            //window.draw(scoreText);
+            for (int i = 0; i < lives; ++i)
+            {
+                sf::CircleShape lifeIcon(10.0);
+                lifeIcon.setFillColor(sf::Color::White);
+                lifeIcon.setOrigin(ball.getRadius(), ball.getRadius());
+                lifeIcon.setPosition(window.getSize().x-10+i*-25,20);
+                window.draw(lifeIcon);
+            }
         }
-        window.draw(ball);
-        window.draw(p1);
         window.display();
     }
 
