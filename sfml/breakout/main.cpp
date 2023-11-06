@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <SFML/Audio.hpp>
+#include <sstream>
 //maybe fix dumb velocity
 
 int main()
@@ -16,6 +17,8 @@ int main()
 
     int score = 0;
     int lives = 3;
+
+    std::stringstream ss;
 
     sf::Font font;
     font.loadFromFile("font.ttf");
@@ -189,7 +192,14 @@ int main()
     ball.setOrigin(ball.getRadius(), ball.getRadius());
     ball.setPosition(window.getSize().x/2,window.getSize().y-100);
 
+
+    #ifdef _WIN32
+    sf::Vector2f velocity(0.15,0.15);
+    float paddleSpeed = 0.5;
+    #elif defined(__linux__)
     sf::Vector2f velocity(0.5, 0.5);
+    float paddleSpeed = 1;
+    #endif
 
 
     while (window.isOpen())
@@ -212,6 +222,18 @@ int main()
                 break;
             }
         }
+
+        //windows hard coding for slightly more consistent ball speed
+
+        // if(velocity.x > 0.15) velocity.x = 0.15;
+        // if(velocity.y > 0.15) velocity.y = 0.15;
+        // if(velocity.x < -0.15) velocity.x = -0.15;
+        // if(velocity.y < -0.15) velocity.y = -0.15;
+
+        // if(velocity.x > 0 && velocity.x < 0.1) velocity.x = 0.1;
+        // if(velocity.x < 0 && velocity.x > -0.1) velocity.x = -0.1;
+        // if(velocity.y > 0 && velocity.y < 0.1) velocity.y = 0.1;
+        // if(velocity.y < 0 && velocity.y > -0.1) velocity.y = -0.1;
 
         if(ball.getPosition().x > window.getSize().x - 25 || ball.getPosition().x < 0 + 25)
         {
@@ -236,11 +258,11 @@ int main()
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && p1.getPosition().x>0+10)
         {
-            p1.move(-1,0);
+            p1.move(-paddleSpeed,0);
         }
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && p1.getPosition().x<window.getSize().x-125)
         {
-            p1.move(1,0);
+            p1.move(paddleSpeed,0);
         }
 
         for(int k = 0; k<51; ++k)
@@ -263,7 +285,7 @@ int main()
                 bool x = ball.getPosition().x > block.getPosition().x + block.getSize().x / 2;
                 bool inX = ball.getPosition().x > block.getPosition().x-11 && ball.getPosition().x < block.getPosition().x + block.getSize().x+11;
                 bool y = ball.getPosition().y > block.getPosition().y + block.getSize().y / 2;
-                bool inY = ball.getPosition().y > block.getPosition().y && ball.getPosition().y < block.getPosition().y + block.getSize().y;
+                bool inY = ball.getPosition().y > block.getPosition().y-11 && ball.getPosition().y < block.getPosition().y + block.getSize().y+11;
 
                 //top
                 if(inX && !y)
@@ -361,7 +383,7 @@ int main()
                     }
                 }
 
-                if(k<51)
+                if(k<50)
                 {
                     if(brickDmg[k] > 1 && brickDmg[k] <= 5) {blockSound.play();}
                     if(brickDmg[k] >= 1){score += 100;}
@@ -406,7 +428,10 @@ int main()
         ballPosition.y += velocity.y;
         ball.setPosition(ballPosition);
 
-        scoreText.setString(std::to_string(score));
+        //scoreText.setString(std::to_string(score));
+        ss << score;
+        scoreText.setString(ss.str());
+        ss.str("");
 
         window.clear();
         if (lives <= 0) {
@@ -426,7 +451,6 @@ int main()
             sf::Time elapsedTime(clock.getElapsedTime());
             while (elapsedTime.asSeconds() < 5.0) {
                 elapsedTime = clock.getElapsedTime();
-                // Wait for 1 second
             }
             window.close();
         } else if (score >= 15000) {
@@ -446,11 +470,9 @@ int main()
             sf::Time elapsedTime(clock.getElapsedTime());
             while (elapsedTime.asSeconds() < 6.0) {
                 elapsedTime = clock.getElapsedTime();
-                // Wait for 1 second
             }
             window.close();
         } else {
-        // add win condition later
             for (int i = 0; i < 50; ++i)
             {
                 window.draw(brick[i]);
@@ -458,7 +480,6 @@ int main()
             window.draw(ball);
             window.draw(p1);
             window.draw(scoreText);
-            //window.draw(scoreText);
             for (int i = 0; i < lives; ++i)
             {
                 sf::CircleShape lifeIcon(10.0);
