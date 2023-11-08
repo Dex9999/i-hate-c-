@@ -225,15 +225,15 @@ int main()
 
         //windows hard coding for slightly more consistent ball speed
 
-        // if(velocity.x > 0.15) velocity.x = 0.15;
-        // if(velocity.y > 0.15) velocity.y = 0.15;
-        // if(velocity.x < -0.15) velocity.x = -0.15;
-        // if(velocity.y < -0.15) velocity.y = -0.15;
+        if(velocity.x > 0.5) velocity.x = 0.5;
+        if(velocity.y > 0.5) velocity.y = 0.5;
+        if(velocity.x < -0.5) velocity.x = -0.5;
+        if(velocity.y < -0.5) velocity.y = -0.5;
 
-        // if(velocity.x > 0 && velocity.x < 0.1) velocity.x = 0.1;
-        // if(velocity.x < 0 && velocity.x > -0.1) velocity.x = -0.1;
-        // if(velocity.y > 0 && velocity.y < 0.1) velocity.y = 0.1;
-        // if(velocity.y < 0 && velocity.y > -0.1) velocity.y = -0.1;
+        if(velocity.x > 0 && velocity.x < 0.3) velocity.x = 0.3;
+        if(velocity.x < 0 && velocity.x > -0.3) velocity.x = -0.3;
+        if(velocity.y > 0 && velocity.y < 0.3) velocity.y = 0.3;
+        if(velocity.y < 0 && velocity.y > -0.3) velocity.y = -0.3;
 
         if(ball.getPosition().x > window.getSize().x - 25 || ball.getPosition().x < 0 + 25)
         {
