@@ -1,80 +1,56 @@
-bits 64
+[org 0x7c00]
+bits 16
 
-; assembly comment syntax
-; this is all written in intel syntax because better
+jmp main
+;
+; Print a string
+;   - bx: address of string
+;
+puts:
+    mov al, [bx]
+    cmp al, 0
+    je exit
+    mov ah, 0x0e        ; display character in tty mode
+    int 0x10                 ;   - read from al
+    inc bx
+    jmp puts
+exit:
+    ret
+;
+; Read a string into `buffer`
+;
+readstr:
+    mov bx, buffer
+    jmp readchar
 
-; r stands for really big (real)
-; mov means move
-; mov rdi, 8 means move the value 8 into the 64 bit register, referred to as rdi (mem address?)
-; mov rdi, rsi = move the val of rsi into rdi
+    readchar:
+        mov ah, 0
+        int 0x16
+        cmp al, 0x0D        ; check for carriage return
+        je storestr
+        push ax
+        inc bx
+        jmp readchar
+    storestr:
+        dec bx
+        pop ax
+        mov [bx], al
+        cmp bx, buffer
+        jle exit
+        jmp storestr
+main:
+    call readstr
+    mov bx, buffer
+    call puts
 
-; memory operations
-; mov rdi, qword ptr [rsi]
-; means treat rsi value as a pointer, remove 8 bytes from memory and put in rdi
-; val from memory into register
-; mov qword ptr [rsi], rdi
-; opposite, put val from register into memory
-; [blah] is a memory address
+    jmp main
 
-; standard in = 0 ?
-; standard out = 1 ?
-; standard err = 2 ?
+str: db "hello world", 0 ; not used in this program
+buffer: times 64 db 0
 
-; syscall table! https://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/
-
-;exposes symbol called _start to the linker so it knows where code starts
-global  _start
-
-section .text
-    _start:  
-      mov rdi, 8
-      mov rsi, rdi
-      ; now both rdi and rsi == 8
-      
-      ; setup for syscall, use handy table!
-
-      ; print!
-      ; %rax	System call	%rdi	%rsi	%rdx
-      ; 1,	sys_write,	unsigned int fd,	const char *buf,	size_t count
-      ;mov rax, 1
-      ;mov rdi, 1 ; fd = file descriptor, std out = 1?
-      ;lea rsi, [uhohree] ; address (pointer) of our buffer with the string, lea = load effective address
-      ; square brackets can be omitted because lea assumes a memory address anyway, elsewise it's how you specify mem address
-      ;mov rdx, 8 ; length
-      ;syscall
-
-      mov rbx, 1
-
-      ; Add the value of 'val' (2) to rbx
-      mov rax, [val]
-      add rbx, rax
-      ; rbx = 1 + 3
-      ; now write it by updating
-      ;mov rax, 1
-      ;mov rdi, 1
-      ;lea rsi, [rbx]
-      ;mov rdx, 1
-      ;syscall
-      ;why noi wokr :( 
-      
-
-      ; exit with error value rbx
-      ; %rax	System call	%rdi
-      ; 60	sys_exit	int error_code
-      mov rax, 60
-      mov rdi, rbx
-      syscall
-
-
-section   .data
-    uhohree: db "uhohree", 10 ; unicode for newline
-    val: dd 2
-    ; db = define byte, 8bit data
-    ; dq = define quadword, 64 bit data
-
-; you can do without section but just dont :)
+times 510-($-$$) db 0
+db 0x55, 0xAA
 
 ; compile on linux comp
-; nasm -felf64 main.asm
-; ld main.o
-; ./a.out
+;nasm -f bin main.asm -o main.bin
+;qemu-system-x86_64 main.bin
