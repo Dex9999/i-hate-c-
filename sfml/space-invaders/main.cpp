@@ -1,16 +1,30 @@
 #include "SFML/Graphics.hpp"
+#include <SFML/Audio.hpp>
 #include <vector>
 #include <iostream>
 
 void moveAliens(std::vector<sf::Sprite>&, int, sf::Vector2f&, sf::RenderWindow&);
 void animateAliens(std::vector<sf::Sprite>&,std::vector<sf::IntRect>&);
 void moveShip(sf::Sprite&, sf::RenderWindow&);
-void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enemyArray);
+void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enemyArray,std::vector<sf::IntRect>&,sf::Sound&,sf::Sound&);
 
 bool bounce = false;
 bool shot = false;
-
 int main() {
+    sf::SoundBuffer buffer;
+    sf::Sound explode;
+
+    if(!buffer.loadFromFile("explosion.wav"))
+        return -1;
+    explode.setBuffer(buffer);
+    //explode.play();
+    sf::SoundBuffer ebuffer;
+    sf::Sound shoot;
+    if(!ebuffer.loadFromFile("laserShoot.wav"))
+        return -1;
+    shoot.setBuffer(ebuffer);
+    //shoot.play();
+
     sf::RenderWindow window(sf::VideoMode(600, 650), "Sprites!");
     sf::Clock clock;
     sf::Event event;
@@ -24,13 +38,11 @@ int main() {
     ship.setOrigin(10/2,7/2.0);
     ship.setPosition(window.getSize().x/2,window.getSize().y-30);
     ship.scale(2,2);
-
     sf::Sprite bullet;
     bullet.setTexture(texture);
     bullet.setTextureRect(sf::IntRect(120,54,1,5));
     bullet.setPosition(10,10);
     bullet.scale(3,3);
-
     /*
     sf::Sprite greenNeutral(texture,sf::IntRect(0,0,8,8));
     sf::Sprite greenOpen(texture,sf::IntRect(9,0,8,8));
@@ -53,7 +65,6 @@ int main() {
     greenOpen.scale(5,5);
     greenDeath.scale(5,5);
     */
-
     int currEnemy = 0;
     sf::IntRect tex;
     for(int i = 0; i<11; ++i) {
@@ -95,98 +106,101 @@ int main() {
             if(event.type == sf::Event::EventType::Closed)
                 window.close();
         }
-
         moveShip(ship,window);
-
-        ohShoot(ship,bullet,enemyArray);
-
+        ohShoot(ship,bullet,enemyArray, textureRectArray, explode, shoot);
         moveAliens(enemyArray,enemyArray.size(), velocity, window);
-
         window.clear();
         elapsed = clock.getElapsedTime();
         if(elapsed.asSeconds() >= 0.5) {
             clock.restart();
             animateAliens(enemyArray,textureRectArray);
         }
-
         for(int i = 0; i < enemyArray.size(); ++i) {
             enemyArray[i].setTextureRect(textureRectArray[i]);
             window.draw(enemyArray[i]);
         }
         window.draw(ship);
-        if(shot){
+        if(shot) {
             window.draw(bullet);
         }
-
         window.display();
     }
 }
 
 void moveAliens(std::vector<sf::Sprite> &enemyArray, int length, sf::Vector2f &velocity, sf::RenderWindow &window) {
-        for(int i = 0; i < enemyArray.size(); ++i) {
-            enemyArray[i].move(velocity.x, velocity.y);
-            //rotation 90 is my death remember thingy
-            if((enemyArray[i].getPosition().x > window.getSize().x - 15|| enemyArray[i].getPosition().x < 0) && enemyArray[i].getRotation() != 90) {
-                bounce = true;
-            }
-            if(bounce) {
-                bounce = false;
-                velocity.x *= -1.01;
-                for(auto& i : enemyArray) {
-                    i.move(0, 15);
-                }
+    for(int i = 0; i < enemyArray.size(); ++i) {
+        enemyArray[i].move(velocity.x, velocity.y);
+        //rotation 1 is my death remember thingy
+        if((enemyArray[i].getPosition().x > window.getSize().x - 15|| enemyArray[i].getPosition().x < 0) && enemyArray[i].getRotation() != 1) {
+            bounce = true;
+        }
+        if(bounce) {
+            bounce = false;
+            velocity.x *= -1.01;
+            for(auto& i : enemyArray) {
+                i.move(0, 15);
             }
         }
+    }
 }
 
 void moveShip(sf::Sprite &ship, sf::RenderWindow &window) {
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && ship.getPosition().x>0+5){
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && ship.getPosition().x>0+12) {
         ship.move(-1,0);
-    } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && ship.getPosition().x<window.getSize().x-25){
+    } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && ship.getPosition().x<window.getSize().x-15) {
         ship.move(1,0);
     }
 }
 
-void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enemyArray){
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)){
-            if(!shot){
-                shot = true;
-                bullet.setPosition(ship.getPosition());
-            }
+void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enemyArray,std::vector<sf::IntRect> &textureRectArray,sf::Sound &explode,sf::Sound &shoot) {
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+        if(!shot) {
+            shot = true;
+            shoot.play();
+            bullet.setPosition(ship.getPosition());
         }
-
-        if(shot){
-            if(bullet.getPosition().y<0){
-                shot = false;
+    }
+    if(shot) {
+        if(bullet.getPosition().y<0) {
+            shot = false;
+        } else {
+            bullet.move(0,-2);
+        }
+    }
+    for(int i = 0; i < enemyArray.size(); ++i) {
+        if(enemyArray[i].getGlobalBounds().intersects(bullet.getGlobalBounds()) && shot) {
+            //sf::Sprite blank;
+            enemyArray[i].setRotation(1);
+            explode.play();
+            if(textureRectArray[i].top == 9 || textureRectArray[i].top == 45) {
+                enemyArray[i].setTextureRect(sf::IntRect(103,textureRectArray[i].top-9,8,8));
+                textureRectArray[i] = sf::IntRect(103,textureRectArray[i].top-9,8,8);
             } else {
-                bullet.move(0,-2);
+                enemyArray[i].setTextureRect(sf::IntRect(103,textureRectArray[i].top,8,8));
+                textureRectArray[i] = sf::IntRect(103,textureRectArray[i].top,8,8);
             }
+            //enemyArray[i] = blank;
+            shot = !shot;
         }
-
-        for(int i = 0; i < enemyArray.size(); ++i) {
-            if(enemyArray[i].getGlobalBounds().intersects(bullet.getGlobalBounds()) && shot){
-            std::cout << "RAHHH";
-                sf::Sprite blank;
-                blank.setRotation(90);
-                enemyArray[i] = blank;
-                shot = !shot;
-            }
-        }
+    }
 }
 
 
 void animateAliens(std::vector<sf::Sprite> &enemyArray,std::vector<sf::IntRect> &textureRectArray) {
-
     for(int i = 0; i<enemyArray.size(); ++i) {
         int newLeft;
-
         // I'm able to hardcode because the spritesheet is nicely proportional
-        if(textureRectArray[i].left != 0){
-            newLeft = 0;
-        } else{
-            newLeft = 9;
+        if(enemyArray[i].getRotation() == 1) {
+            sf::Sprite blank;
+            blank.setRotation(1);
+            enemyArray[i] = blank;
+        } else {
+            if(textureRectArray[i].left != 0) {
+                newLeft = 0;
+            } else {
+                newLeft = 9;
+            }
         }
-
         enemyArray[i].setTextureRect(sf::IntRect(newLeft,textureRectArray[i].top,8,8));
         textureRectArray[i] = sf::IntRect(newLeft,textureRectArray[i].top,8,8);
     }
