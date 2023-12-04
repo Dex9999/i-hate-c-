@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 void moveAliens(std::vector<sf::Sprite>&, int, sf::Vector2f&, sf::RenderWindow&);
 void animateAliens(std::vector<sf::Sprite>&,std::vector<sf::IntRect>&);
@@ -10,6 +11,8 @@ void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enem
 
 bool bounce = false;
 bool shot = false;
+int score = 0;
+
 int main() {
     sf::SoundBuffer buffer;
     sf::Sound explode;
@@ -43,6 +46,7 @@ int main() {
     bullet.setTextureRect(sf::IntRect(120,54,1,5));
     bullet.setPosition(10,10);
     bullet.scale(3,3);
+    std::stringstream ss;
     /*
     sf::Sprite greenNeutral(texture,sf::IntRect(0,0,8,8));
     sf::Sprite greenOpen(texture,sf::IntRect(9,0,8,8));
@@ -65,6 +69,16 @@ int main() {
     greenOpen.scale(5,5);
     greenDeath.scale(5,5);
     */
+    sf::Font font;
+    font.loadFromFile("font.ttf");
+
+    sf::Text p1score("0", font);
+    p1score.setCharacterSize(50);
+    p1score.setFillColor(sf::Color::White);
+    p1score.setStyle(sf::Text::Bold);
+    p1score.setOrigin(p1score.getLocalBounds().left + 100, 0);
+    p1score.setPosition(250, 15);
+
     int currEnemy = 0;
     sf::IntRect tex;
     for(int i = 0; i<11; ++i) {
@@ -109,6 +123,15 @@ int main() {
         moveShip(ship,window);
         ohShoot(ship,bullet,enemyArray, textureRectArray, explode, shoot);
         moveAliens(enemyArray,enemyArray.size(), velocity, window);
+
+
+        ss << score*100;
+        p1score.setString(ss.str());
+        ss.str("");
+
+        p1score.setOrigin(p1score.getLocalBounds().left + 100, 0);
+        score==0?p1score.setPosition(window.getSize().x, 15):p1score.setPosition(window.getSize().x-50, 15);
+
         window.clear();
         elapsed = clock.getElapsedTime();
         if(elapsed.asSeconds() >= 0.5) {
@@ -123,6 +146,7 @@ int main() {
         if(shot) {
             window.draw(bullet);
         }
+        window.draw(p1score);
         window.display();
     }
 }
@@ -172,6 +196,7 @@ void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enem
             //sf::Sprite blank;
             enemyArray[i].setRotation(1);
             explode.play();
+            ++score;
             if(textureRectArray[i].top == 9 || textureRectArray[i].top == 45) {
                 enemyArray[i].setTextureRect(sf::IntRect(103,textureRectArray[i].top-9,8,8));
                 textureRectArray[i] = sf::IntRect(103,textureRectArray[i].top-9,8,8);
