@@ -12,6 +12,7 @@ void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enem
 bool bounce = false;
 bool shot = false;
 int score = 0;
+bool dead = false;
 
 int main() {
     sf::SoundBuffer buffer;
@@ -27,6 +28,19 @@ int main() {
         return -1;
     shoot.setBuffer(ebuffer);
     //shoot.play();
+    sf::SoundBuffer wbuffer;
+    sf::Sound win;
+    if(!wbuffer.loadFromFile("win.wav"))
+        return -1;
+    win.setBuffer(wbuffer);
+
+    sf::SoundBuffer lbuffer;
+    sf::Sound lose;
+    if(!lbuffer.loadFromFile("lose.wav"))
+        return -1;
+    lose.setBuffer(lbuffer);
+    bool loseSoundPlayed = false;
+    bool winSoundPlayed = false;
 
     sf::RenderWindow window(sf::VideoMode(600, 650), "Sprites!");
     sf::Clock clock;
@@ -110,6 +124,8 @@ int main() {
             enemyArray.push_back(indEnemy);
         }
     }
+
+
     //it's a 8x8 grid
 //  for(texture->getSize().x/;)
     sf::Time elapsed;
@@ -120,6 +136,7 @@ int main() {
             if(event.type == sf::Event::EventType::Closed)
                 window.close();
         }
+
         moveShip(ship,window);
         ohShoot(ship,bullet,enemyArray, textureRectArray, explode, shoot);
         moveAliens(enemyArray,enemyArray.size(), velocity, window);
@@ -142,12 +159,46 @@ int main() {
             enemyArray[i].setTextureRect(textureRectArray[i]);
             window.draw(enemyArray[i]);
         }
-        window.draw(ship);
-        if(shot) {
-            window.draw(bullet);
+        if(score >= 55 ||dead){
+            dead ? p1score.setString("You Lost!") : p1score.setString("You Win!");
+            p1score.setPosition(window.getSize().x/2,window.getSize().y/2);
+            window.draw(p1score);
+            if (dead) {
+                if(!loseSoundPlayed){
+                    lose.play();
+                    loseSoundPlayed = true;
+                }
+                window.display();
+                clock.restart();
+                sf::Time elapsedTime(clock.getElapsedTime());
+                while (elapsedTime.asSeconds() < 6.0) {
+                    elapsedTime = clock.getElapsedTime();
+                }
+                window.close();
+            } else if (!dead) {
+                if(!winSoundPlayed){
+                    win.play();
+                    winSoundPlayed = true;
+                }
+                window.display();
+                clock.restart();
+                sf::Time elapsedTime(clock.getElapsedTime());
+                while (elapsedTime.asSeconds() < 6.0) {
+                    elapsedTime = clock.getElapsedTime();
+                }
+                window.close();
+            }
+
+            window.close();
+        } else{
+            window.draw(ship);
+            if(shot) {
+                window.draw(bullet);
+            }
+            window.draw(p1score);
+            window.display();
         }
-        window.draw(p1score);
-        window.display();
+
     }
 }
 
@@ -164,6 +215,9 @@ void moveAliens(std::vector<sf::Sprite> &enemyArray, int length, sf::Vector2f &v
             for(auto& i : enemyArray) {
                 i.move(0, 15);
             }
+        }
+        if((enemyArray[i].getPosition().y>=window.getSize().y) && enemyArray[i].getRotation() != 1){
+            dead = true;
         }
     }
 }
@@ -192,7 +246,7 @@ void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enem
         }
     }
     for(int i = 0; i < enemyArray.size(); ++i) {
-        if(enemyArray[i].getGlobalBounds().intersects(bullet.getGlobalBounds()) && shot) {
+        if(enemyArray[i].getGlobalBounds().intersects(bullet.getGlobalBounds()) && shot && enemyArray[i].getRotation() != 1) {
             //sf::Sprite blank;
             enemyArray[i].setRotation(1);
             explode.play();
