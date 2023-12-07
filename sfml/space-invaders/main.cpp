@@ -7,7 +7,7 @@
 void moveAliens(std::vector<sf::Sprite>&, int, sf::Vector2f&, sf::RenderWindow&);
 void animateAliens(std::vector<sf::Sprite>&,std::vector<sf::IntRect>&);
 void moveShip(sf::Sprite&, sf::RenderWindow&);
-void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enemyArray,std::vector<sf::IntRect>&,sf::Sound&,sf::Sound&);
+void ohShoot(sf::Sprite&, sf::Sprite&, std::vector<sf::Sprite>&,std::vector<sf::IntRect>&,sf::Sound&,sf::Sound&);
 
 bool bounce = false;
 bool shot = false;
@@ -15,6 +15,12 @@ int score = 0;
 bool dead = false;
 
 int main() {
+    sf::Music music;
+    if (!music.openFromFile("music.wav"))
+        return -1;
+    music.setLoop(true);
+    music.play();
+
     sf::SoundBuffer buffer;
     sf::Sound explode;
 
@@ -61,28 +67,6 @@ int main() {
     bullet.setPosition(10,10);
     bullet.scale(3,3);
     std::stringstream ss;
-    /*
-    sf::Sprite greenNeutral(texture,sf::IntRect(0,0,8,8));
-    sf::Sprite greenOpen(texture,sf::IntRect(9,0,8,8));
-    sf::Sprite greenDeath(texture,sf::IntRect(103,0,8,8));
-    sf::Sprite greenLNeutral(texture,sf::IntRect(0,9,8,8));
-    sf::Sprite greenLOpen(texture,sf::IntRect(9,9,8,8));
-    sf::Sprite blueNeutral(texture,sf::IntRect(0,36,8,8));
-    sf::Sprite blueOpen(texture,sf::IntRect(9,36,8,8));
-    sf::Sprite blueDeath(texture,sf::IntRect(103,36,8,8));
-    sf::Sprite fatBlueNeutral(texture,sf::IntRect(0,45,8,8));
-    sf::Sprite fatBlueOpen(texture,sf::IntRect(9,45,8,8));
-    sf::Sprite fatBlueDeath(texture,sf::IntRect(103,36,8,8));
-    sf::Sprite pinkNeutral(texture,sf::IntRect(0,72,8,8));
-    sf::Sprite pinkOpen(texture,sf::IntRect(9,72,8,8));
-    sf::Sprite pinkDeath(texture,sf::IntRect(103,72,8,8));
-    greenNeutral.setPosition(100,100);
-    greenOpen.setPosition(100,100);
-    greenDeath.setPosition(100,100);
-    greenNeutral.scale(5,5);
-    greenOpen.scale(5,5);
-    greenDeath.scale(5,5);
-    */
     sf::Font font;
     font.loadFromFile("font.ttf");
 
@@ -148,7 +132,7 @@ int main() {
 
         p1score.setOrigin(p1score.getLocalBounds().left + 100, 0);
         score==0?p1score.setPosition(window.getSize().x, 15):p1score.setPosition(window.getSize().x-50, 15);
-
+        score>=100?p1score.setPosition(window.getSize().x-100, 15):p1score.setPosition(window.getSize().x-50, 15);
         window.clear();
         elapsed = clock.getElapsedTime();
         if(elapsed.asSeconds() >= 0.5) {
@@ -159,9 +143,13 @@ int main() {
             enemyArray[i].setTextureRect(textureRectArray[i]);
             window.draw(enemyArray[i]);
         }
-        if(score >= 55 ||dead){
-            dead ? p1score.setString("You Lost!") : p1score.setString("You Win!");
-            p1score.setPosition(window.getSize().x/2,window.getSize().y/2);
+        if(score >= 165 ||dead){
+            music.stop();
+            ss << score*100;
+            dead ? p1score.setString("   You Lost!\nFinal Score:\n"+ss.str()) : p1score.setString("You Win!");
+            ss.str("");
+            dead ? p1score.setPosition(window.getSize().x/2-50,window.getSize().y/2-50) : p1score.setPosition(window.getSize().x/2,window.getSize().y/2);
+
             window.draw(p1score);
             if (dead) {
                 if(!loseSoundPlayed){
@@ -176,6 +164,7 @@ int main() {
                 }
                 window.close();
             } else if (!dead) {
+
                 if(!winSoundPlayed){
                     win.play();
                     winSoundPlayed = true;
@@ -216,7 +205,7 @@ void moveAliens(std::vector<sf::Sprite> &enemyArray, int length, sf::Vector2f &v
                 i.move(0, 15);
             }
         }
-        if((enemyArray[i].getPosition().y>=window.getSize().y) && enemyArray[i].getRotation() != 1){
+        if((enemyArray[i].getPosition().y>=window.getSize().y-50) && enemyArray[i].getRotation() != 1){
             dead = true;
         }
     }
@@ -250,7 +239,24 @@ void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enem
             //sf::Sprite blank;
             enemyArray[i].setRotation(1);
             explode.play();
-            ++score;
+            /*
+            (0)(5)(10)(15)(20)
+            (1)(6)(11)(16)(21)
+            (2)(7)(12)(17)(22)
+            (3)(8)(13)(18)(23)
+            (4)(9)(14)(19)(24)
+            */
+            if(i%5 == 0)
+                score+=5;
+            if(i%5 == 1)
+                score+=4;
+            if(i%5 == 2)
+                score+=3;
+            if(i%5 == 3)
+                score+=2;
+            if(i%5 == 4)
+                score+=1;
+
             if(textureRectArray[i].top == 9 || textureRectArray[i].top == 45) {
                 enemyArray[i].setTextureRect(sf::IntRect(103,textureRectArray[i].top-9,8,8));
                 textureRectArray[i] = sf::IntRect(103,textureRectArray[i].top-9,8,8);
