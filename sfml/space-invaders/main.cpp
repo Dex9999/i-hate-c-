@@ -12,9 +12,11 @@ void ohShoot(sf::Sprite&, sf::Sprite&, std::vector<sf::Sprite>&,std::vector<sf::
 bool bounce = false;
 bool shot = false;
 int score = 0;
+int round = 1;
 bool dead = false;
 
 int main() {
+    //music is same among rounds
     sf::Music music;
     if (!music.openFromFile("music.wav"))
         return -1;
@@ -48,7 +50,7 @@ int main() {
     bool loseSoundPlayed = false;
     bool winSoundPlayed = false;
 
-    sf::RenderWindow window(sf::VideoMode(600, 650), "Sprites!");
+    sf::RenderWindow window(sf::VideoMode(600, 650), "Space Invader? I Hardly Know Her!");
     sf::Clock clock;
     sf::Event event;
     sf::Texture texture;
@@ -61,6 +63,7 @@ int main() {
     ship.setOrigin(10/2,7/2.0);
     ship.setPosition(window.getSize().x/2,window.getSize().y-30);
     ship.scale(2,2);
+
     sf::Sprite bullet;
     bullet.setTexture(texture);
     bullet.setTextureRect(sf::IntRect(120,54,1,5));
