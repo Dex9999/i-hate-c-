@@ -12,8 +12,15 @@ void ohShoot(sf::Sprite&, sf::Sprite&, std::vector<sf::Sprite>&,std::vector<sf::
 bool bounce = false;
 bool shot = false;
 int score = 0;
-int round = 1;
 bool dead = false;
+
+bool fatFire = false;
+sf::Clock bulletClock;
+bool pierce = false;
+sf::Clock pClock;
+sf::Vector2f velocity(0.035,0);
+bool slow = true;
+sf::Clock sClock;
 
 int main() {
     //music is same among rounds
@@ -49,6 +56,8 @@ int main() {
     lose.setBuffer(lbuffer);
     bool loseSoundPlayed = false;
     bool winSoundPlayed = false;
+
+
 
     sf::RenderWindow window(sf::VideoMode(600, 650), "Space Invader? I Hardly Know Her!");
     sf::Clock clock;
@@ -117,7 +126,7 @@ int main() {
 //  for(texture->getSize().x/;)
     sf::Time elapsed;
     int seconds = 0;
-    sf::Vector2f velocity(0.25,0);
+
     while(window.isOpen()) {
         while(window.pollEvent(event)) {
             if(event.type == sf::Event::EventType::Closed)
@@ -132,6 +141,38 @@ int main() {
         ss << score*100;
         p1score.setString(ss.str());
         ss.str("");
+
+        //proof of concept
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && !fatFire) {
+            fatFire = true;
+            bullet.setScale(24,8);
+            bulletClock.restart();
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P) && !pierce) {
+            pierce = true;
+            pClock.restart();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && !slow) {
+            if (velocity.x > 0) {
+                velocity.x -= 0.07;
+            } else if (velocity.x < 0) {
+                velocity.x += 0.07;
+            }
+
+            slow = true;
+            sClock.restart();
+        }
+
+        if (sClock.getElapsedTime().asSeconds() >= 0.25 && slow) {
+            if (velocity.x > 0) {
+                velocity.x += 0.07;
+            } else if (velocity.x < 0) {
+                velocity.x -= 0.07;
+            }
+
+            slow = false;
+        }
+
 
         p1score.setOrigin(p1score.getLocalBounds().left + 100, 0);
         score==0?p1score.setPosition(window.getSize().x, 15):p1score.setPosition(window.getSize().x-50, 15);
@@ -216,28 +257,42 @@ void moveAliens(std::vector<sf::Sprite> &enemyArray, int length, sf::Vector2f &v
 
 void moveShip(sf::Sprite &ship, sf::RenderWindow &window) {
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && ship.getPosition().x>0+12) {
-        ship.move(-1,0);
+        ship.move(-0.25,0);
     } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && ship.getPosition().x<window.getSize().x-15) {
-        ship.move(1,0);
+        ship.move(0.25,0);
     }
 }
-
+int hit = 0;
 void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enemyArray,std::vector<sf::IntRect> &textureRectArray,sf::Sound &explode,sf::Sound &shoot) {
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         if(!shot) {
             shot = true;
             shoot.play();
             bullet.setPosition(ship.getPosition());
+
+            if(bulletClock.getElapsedTime().asSeconds() > 3 && fatFire == true){
+                bullet.setScale(6,3);
+                fatFire = false;
+            } else if (!fatFire){
+                bulletClock.restart();
+            }
+            if(pClock.getElapsedTime().asSeconds() > 3 && pierce == true){
+                pierce = false;
+            } else if (!pierce){
+                pClock.restart();
+            }
         }
     }
     if(shot) {
         if(bullet.getPosition().y<0) {
             shot = false;
         } else {
-            bullet.move(0,-2);
+            bullet.move(0,-0.5);
         }
     }
+
     for(int i = 0; i < enemyArray.size(); ++i) {
+
         if(enemyArray[i].getGlobalBounds().intersects(bullet.getGlobalBounds()) && shot && enemyArray[i].getRotation() != 1) {
             //sf::Sprite blank;
             enemyArray[i].setRotation(1);
@@ -268,7 +323,19 @@ void ohShoot(sf::Sprite &ship, sf::Sprite &bullet, std::vector<sf::Sprite> &enem
                 textureRectArray[i] = sf::IntRect(103,textureRectArray[i].top,8,8);
             }
             //enemyArray[i] = blank;
-            shot = !shot;
+            if(fatFire){
+                if(i == enemyArray.size()-1){
+                shot = !shot;
+                }
+            } else if (pierce){
+                hit++;
+                if(hit >= 2 || i == enemyArray.size()-1){ // Modify condition to check if the bullet pierced 2 aliens
+                    shot = !shot;
+                    hit = 0;
+                }
+            } else {
+                shot = !shot;
+            }
         }
     }
 }
